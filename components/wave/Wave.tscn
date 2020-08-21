@@ -1,0 +1,35 @@
+[gd_scene load_steps=9 format=2]
+
+[ext_resource path="res://components/wave/Wave.shader" type="Shader" id=1]
+[ext_resource path="res://components/wave/Wave.gd" type="Script" id=2]
+
+[sub_resource type="PlaneMesh" id=1]
+size = Vector2( 60, 40 )
+subdivide_width = 60
+subdivide_depth = 40
+
+[sub_resource type="OpenSimplexNoise" id=2]
+seed = 1
+octaves = 5
+
+[sub_resource type="NoiseTexture" id=3]
+seamless = true
+noise = SubResource( 2 )
+
+[sub_resource type="Curve" id=4]
+_data = [ Vector2( 0.350877, 1 ), 0.0, -13.8649, 0, 0, Vector2( 0.5, 0 ), 0.0, 0.0, 0, 0, Vector2( 0.508772, 0 ), 0.121621, 0.121621, 0, 0, Vector2( 0.672515, 0.986487 ), 13.6723, 0.0, 0, 0 ]
+
+[sub_resource type="CurveTexture" id=5]
+curve = SubResource( 4 )
+
+[sub_resource type="ShaderMaterial" id=6]
+shader = ExtResource( 1 )
+shader_param/pos = 1.0
+shader_param/size = Vector2( 61, 41 )
+shader_param/noise = SubResource( 3 )
+shader_param/road = SubResource( 5 )
+
+[node name="MeshInstance" type="MeshInstance"]
+mesh = SubResource( 1 )
+material/0 = SubResource( 6 )
+script = ExtResource( 2 )
