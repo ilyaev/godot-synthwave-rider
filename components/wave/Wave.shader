@@ -18,7 +18,7 @@ void vertex() {
 	h += cos(VERTEX.x) * sin(VERTEX.z - t);
 
 	float maxH = 35.;
-	maxH *= sin(TIME*2. + VERTEX.x*13.);
+	// maxH *= sin(TIME*2. + VERTEX.x*13.);
 
 	h += max(0., texture(noise, (UV + vec2(0, t)) *3.).r * maxH - (maxH * .55));
 
