@@ -6,11 +6,6 @@
 [ext_resource path="res://WorldEnv.tres" type="Environment" id=4]
 [ext_resource path="res://components/wave/Wave.tscn" type="PackedScene" id=5]
 
-[sub_resource type="CubeMesh" id=1]
-
-[sub_resource type="SpatialMaterial" id=2]
-albedo_color = Color( 0.52549, 0.00392157, 0.494118, 1 )
-
 [sub_resource type="ParticlesMaterial" id=3]
 emission_shape = 2
 emission_box_extents = Vector3( 30, 8, 3 )
@@ -24,6 +19,11 @@ tangential_accel_random = 0.67
 [sub_resource type="CubeMesh" id=4]
 size = Vector3( 0.2, 0.6, 0.2 )
 
+[sub_resource type="CubeMesh" id=1]
+
+[sub_resource type="SpatialMaterial" id=2]
+albedo_color = Color( 0.52549, 0.00392157, 0.494118, 1 )
+
 [node name="Spatial" type="Spatial"]
 script = ExtResource( 3 )
 
@@ -32,22 +32,21 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 21 )
 environment = ExtResource( 4 )
 script = ExtResource( 1 )
 
-[node name="Ship" type="MeshInstance" parent="Camera"]
-transform = Transform( 0.2, 0, 0, 0, 0.0939693, 0.034202, 0, -0.034202, 0.0939693, 0, -0.0999999, -1 )
-visible = false
-mesh = SubResource( 1 )
-material/0 = SubResource( 2 )
-script = ExtResource( 2 )
-
 [node name="Wave" parent="." instance=ExtResource( 5 )]
 
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 0, 0 )
 
 [node name="StarWind" type="Particles" parent="."]
-transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 1.447, 8, -13.347 )
+transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0, 12, -14 )
 amount = 120
 lifetime = 3.0
 speed_scale = 2.0
 process_material = SubResource( 3 )
 draw_pass_1 = SubResource( 4 )
+
+[node name="Ship" type="MeshInstance" parent="."]
+transform = Transform( 0.2, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 1, 18 )
+mesh = SubResource( 1 )
+material/0 = SubResource( 2 )
+script = ExtResource( 2 )
