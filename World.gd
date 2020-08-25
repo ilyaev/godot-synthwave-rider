@@ -6,6 +6,7 @@ var coords = Vector3(0,0,0)
 var ship
 var maxSpeed = 50
 var camera
+var waveYdistortion
 
 func _ready():
 	ship = $Ship
@@ -26,8 +27,12 @@ func _process(delta):
 		velocity.y = min(0, velocity.y + .2)
 
 	coords += velocity * delta
+
+	waveYdistortion = $Wave.waveYdistortion
+
 	ship.transform.origin.x = coords.x
-	ship.transform.origin.y = 1 - sin((coords.y - 2) / 10)*.1
+	ship.transform.origin.y = sin((17 - coords.y) / waveYdistortion) + .2
+	camera.transform.origin.y = sin((21 - coords.y) / waveYdistortion) + 2.5
 
 func getCoords():
 	return coords

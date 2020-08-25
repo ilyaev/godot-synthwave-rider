@@ -19,26 +19,26 @@ height = 1024
 seamless = true
 noise = SubResource( 2 )
 
-[sub_resource type="OpenSimplexNoise" id=7]
+[sub_resource type="OpenSimplexNoise" id=4]
 seed = 17
 octaves = 4
 period = 71.3
 persistence = 0.776
 lacunarity = 2.03
 
-[sub_resource type="NoiseTexture" id=8]
+[sub_resource type="NoiseTexture" id=5]
 width = 128
 height = 128
 seamless = true
-noise = SubResource( 7 )
+noise = SubResource( 4 )
 
-[sub_resource type="Curve" id=4]
+[sub_resource type="Curve" id=6]
 _data = [ Vector2( 0.350877, 1 ), 0.0, -13.8649, 0, 0, Vector2( 0.459064, 0 ), 0.0, 0.0, 0, 0, Vector2( 0.546784, 0 ), -0.035826, -0.035826, 0, 0, Vector2( 0.672515, 0.986487 ), 13.6723, 0.0, 0, 0 ]
 
-[sub_resource type="CurveTexture" id=5]
-curve = SubResource( 4 )
+[sub_resource type="CurveTexture" id=7]
+curve = SubResource( 6 )
 
-[sub_resource type="ShaderMaterial" id=6]
+[sub_resource type="ShaderMaterial" id=8]
 shader = ExtResource( 1 )
 shader_param/pos = 1.0
 shader_param/size = Vector2( 61, 41 )
@@ -48,12 +48,13 @@ shader_param/grid_show = true
 shader_param/base_color = Color( 1, 0.0313726, 0.0313726, 1 )
 shader_param/base_color_show = true
 shader_param/road_color = Color( 0.94902, 0.803922, 0.333333, 1 )
+shader_param/waveYdistortion = 0.0
+shader_param/waveXdistortion = 0.0
 shader_param/noise = SubResource( 3 )
-shader_param/noise_major = SubResource( 8 )
-shader_param/road = SubResource( 5 )
+shader_param/noise_major = SubResource( 5 )
+shader_param/road = SubResource( 7 )
 
 [node name="MeshInstance" type="MeshInstance"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
 mesh = SubResource( 1 )
-material/0 = SubResource( 6 )
+material/0 = SubResource( 8 )
 script = ExtResource( 2 )

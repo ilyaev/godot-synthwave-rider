@@ -1,5 +1,8 @@
 extends MeshInstance
 
+export var waveYdistortion = 15;
+export var waveXdistortion = 0;
+
 var pos = 0;
 var glPos = 0.0;
 var speed = 8;
@@ -35,23 +38,16 @@ func _physics_process(delta):
 	else:
 		rot -= rotA;
 
-
-
-
-
 	var cameraShift = Vector3(0, -sin((pos - 1)/10), fmod(pos, step));
 
-	# camera.rotation = Vector3(0,0,rot);
 	camera.transform.origin = cameraStart - cameraShift;
 	wind.transform.origin = windStart - cameraShift;
 	ship.transform.origin = shipStart - cameraShift;
 
-	# get_surface_material(0).set_shader_param('pos', floor(pos / step));
-	print('Y:', pos)
 	get_surface_material(0).set_shader_param('pos', floor(pos / step));
+	get_surface_material(0).set_shader_param('waveYdistortion', waveYdistortion);
+	get_surface_material(0).set_shader_param('waveXdistortion', waveXdistortion);
 
-	# var shift = speed * delta;
-	# pos += shift
 	pos = get_parent().getCoords().y
 
 

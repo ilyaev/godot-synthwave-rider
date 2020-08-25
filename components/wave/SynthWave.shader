@@ -12,6 +12,8 @@ uniform bool grid_show;
 uniform vec4 base_color : hint_color;
 uniform bool base_color_show;
 uniform vec4 road_color : hint_color;
+uniform float waveYdistortion : hint_range(0, 100);
+uniform float waveXdistortion : hint_range(0, 100);
 
 float N21(vec2 p) {
     return fract(sin(p.x*223.32+p.y*5677.)*4332.23);
@@ -36,10 +38,13 @@ void vertex() {
 
     vec2 distortion = vec2(0.);
 
-    distortion.y = sin((VERTEX.z - pos) / 10.);
-    // distortion.y += texture(noise_major, (vec2((VERTEX.z - pos), .1))).r;
+    if (waveYdistortion != 0.) {
+        distortion.y = sin((VERTEX.z - t) / waveYdistortion);
+    }
 
-    // distortion.x = sin((VERTEX.z - pos) / 10.); // + TIME * 0.) * sin(TIME);
+    if (waveXdistortion != 0.) {
+        distortion.x = sin((VERTEX.z - pos) / waveXdistortion);
+    }
 
     VERTEX.xy += distortion;
 
