@@ -23,6 +23,6 @@ func _physics_process(delta):
 	get_surface_material(0).set_shader_param('pos', floor(pos / step));
 	pos += shift
 	# camera.rotate_z(sin(pos) * .01)
-	# camera.rotate_x(cos(pos) * .01)
+	# camera.rotate_x(cos(pos) * .01).
 	# camera.rotate_y(sin(pos/2) * .01)
 

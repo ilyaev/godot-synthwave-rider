@@ -18,6 +18,7 @@ uniform float mountain_sharpness : hint_range(0.2, 8.) = 1.;
 uniform float mountain_height: hint_range(20, 600) = 85;
 uniform float mountain_density : hint_range(0.001, 1.) = 0.55;
 uniform vec3 mountain_seed = vec3(223.32, 5677., 4332.23);
+uniform bool mountain_base = true;
 
 const mat2 m = mat2(vec2( 1.6,  1.2), vec2(-1.2,  1.6 ));
 
@@ -39,9 +40,9 @@ float noise( in vec2 p ) {
     return dot(n, vec3(70.0));
 }
 
-float fbm(vec2 n) {
+float fbm(vec2 n, int q) {
     float total = 0.0, amplitude = 0.03;
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < q; i++) {
         total += noise(n) * amplitude;
         n = m * n;
         amplitude *= 0.4;
@@ -53,8 +54,8 @@ void vertex() {
     float t = pos * ((size - vec2(1., 1.))/size).y;
     float h = 0.0;
 
-    h += 1.7 * sin(VERTEX.z - t) + fract((VERTEX.z - t) / 12.);
-    h += cos(VERTEX.x / 6. + (size.x / 2.)) * sin((VERTEX.z - t) / 3.);
+    // h += 1.7 * sin(VERTEX.z - t) + fract((VERTEX.z - t) / 12.);
+    // h += cos(VERTEX.x / 6. + (size.x / 2.)) * sin((VERTEX.z - t) / 3.);
 
     float maxH = mountain_height;
     // maxH *= sin(TIME/2. + VERTEX.x*13.);
@@ -63,7 +64,10 @@ void vertex() {
     // h += max(0., texture(noise_major, (UV + vec2(0, t))).r * maxH - (maxH * .58));
 
     // h += Noise((UV - vec2(1.3, pos/size.y)) * mountain_sharpness, 4) * maxH - (maxH * mountain_density);
-    h -= (fbm((UV - vec2(1.3, pos/size.y)) * mountain_sharpness) * maxH - (maxH * mountain_density));
+    h += (fbm((UV - vec2(1.3, pos/size.y)) * mountain_sharpness, 3) * maxH - (maxH * mountain_density));
+    if (mountain_base) {
+        h = max(0, h) + (fbm((UV - vec2(1.3, pos/size.y)) * 1., 2) * 600. - (maxH * mountain_density));
+    }
     // h = fbm((UV - vec2(1.3, pos/size.y)) * mountain_sharpness) * maxH - (maxH * mountain_density);
 
     h *= texture(road, UV).r;
