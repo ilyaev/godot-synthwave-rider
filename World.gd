@@ -31,8 +31,15 @@ func _process(delta):
 	waveYdistortion = $Wave.waveYdistortion
 
 	ship.transform.origin.x = coords.x
-	ship.transform.origin.y = sin((17 - coords.y) / waveYdistortion) + .2
-	camera.transform.origin.y = sin((21 - coords.y) / waveYdistortion) + 2.5
+	ship.transform.origin.y = getDistortionY(coords.y, 17, 0.2);
+	camera.transform.origin.y = getDistortionY(coords.y, 21, 2.5);
+
+	var l = 0.25
+	var ta = (getDistortionY(coords.y + l, 17, 0.2) - ship.transform.origin.y) / l;
+	ship.rotation = Vector3(atan(ta), -0.1 * sign(velocity.x), 0)
+
+func getDistortionY(pos, shift, extra):
+	return sin((shift - pos) / waveYdistortion) +extra
 
 func getCoords():
 	return coords
