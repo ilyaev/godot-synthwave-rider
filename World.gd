@@ -6,11 +6,15 @@ var coords = Vector3(0,0,0)
 var ship
 var maxSpeed = 50
 var camera
+var wind
+var back
 var waveYdistortion
 
 func _ready():
 	ship = $Ship
 	camera = $Camera
+	wind = $StarWind
+	back = $Back
 	pass
 
 func syncShipPosition():
@@ -33,6 +37,7 @@ func _process(delta):
 	ship.transform.origin.x = coords.x
 	ship.transform.origin.y = getDistortionY(coords.y, 17, 0.2);
 	camera.transform.origin.y = getDistortionY(coords.y, 21, 2.5);
+	wind.transform.origin.y = camera.transform.origin.y + 9.5;
 
 	var l = 0.25
 	var ta = (getDistortionY(coords.y + l, 17, 0.2) - ship.transform.origin.y) / l;

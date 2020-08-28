@@ -1,10 +1,11 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://Camera.gd" type="Script" id=1]
 [ext_resource path="res://ship.gd" type="Script" id=2]
 [ext_resource path="res://World.gd" type="Script" id=3]
 [ext_resource path="res://WorldEnv.tres" type="Environment" id=4]
 [ext_resource path="res://components/wave/Wave.tscn" type="PackedScene" id=5]
+[ext_resource path="res://components/back/Back.tscn" type="PackedScene" id=6]
 
 [sub_resource type="ParticlesMaterial" id=1]
 emission_shape = 2
@@ -55,3 +56,5 @@ script = ExtResource( 2 )
 
 [node name="Camera2" type="Camera" parent="."]
 transform = Transform( 0.173648, 0.0566895, 0.983175, 0, 0.998342, -0.057564, -0.984808, 0.00999589, 0.17336, 4.34907, 1.86109, 17.8197 )
+
+[node name="Back" parent="." instance=ExtResource( 6 )]

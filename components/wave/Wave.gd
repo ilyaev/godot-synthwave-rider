@@ -12,6 +12,8 @@ var ship;
 var cameraStart = Vector3(0,3,22);
 var windStart;
 var shipStart;
+var back;
+var backStart;
 var step = 1.0;
 var size = Vector2(0,0)
 var rotA = 0;
@@ -24,6 +26,8 @@ func _ready():
 	windStart = wind.transform.origin;
 	ship = get_parent().get_node('Ship');
 	shipStart = ship.transform.origin;
+	back = get_parent().get_node('Back');
+	backStart = back.transform.origin;
 	size = Vector2(get_mesh().get_subdivide_width() + 1, get_mesh().get_subdivide_depth() + 1);
 	get_surface_material(0).set_shader_param('size', size);
 	var stepV = (size - Vector2(1,1))/ size
@@ -43,6 +47,7 @@ func _physics_process(delta):
 	camera.transform.origin = cameraStart - cameraShift;
 	wind.transform.origin = windStart - cameraShift;
 	ship.transform.origin = shipStart - cameraShift;
+	back.transform.origin = backStart - cameraShift;
 
 	get_surface_material(0).set_shader_param('pos', floor(pos / step));
 	get_surface_material(0).set_shader_param('waveYdistortion', waveYdistortion);
