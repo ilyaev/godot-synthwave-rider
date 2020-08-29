@@ -37,6 +37,7 @@ func _process(delta):
 	ship.transform.origin.x = coords.x
 	ship.transform.origin.y = getDistortionY(coords.y, 17, 0.2);
 	camera.transform.origin.y = getDistortionY(coords.y, 21, 2.5);
+	back.transform.origin.y = getDistortionY(coords.y, 21, 8);
 	wind.transform.origin.y = camera.transform.origin.y + 9.5;
 
 	var l = 0.25

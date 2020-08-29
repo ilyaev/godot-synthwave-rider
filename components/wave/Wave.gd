@@ -9,7 +9,7 @@ var speed = 8;
 var camera;
 var wind;
 var ship;
-var cameraStart = Vector3(0,3,22);
+var cameraStart;
 var windStart;
 var shipStart;
 var back;
@@ -23,11 +23,14 @@ var rot = -PI/4;
 func _ready():
 	camera = get_parent().get_node('Camera');
 	wind = get_parent().get_node('StarWind');
-	windStart = wind.transform.origin;
 	ship = get_parent().get_node('Ship');
-	shipStart = ship.transform.origin;
 	back = get_parent().get_node('Back');
+
+	windStart = wind.transform.origin;
+	shipStart = ship.transform.origin;
 	backStart = back.transform.origin;
+	cameraStart = camera.transform.origin;
+
 	size = Vector2(get_mesh().get_subdivide_width() + 1, get_mesh().get_subdivide_depth() + 1);
 	get_surface_material(0).set_shader_param('size', size);
 	var stepV = (size - Vector2(1,1))/ size
