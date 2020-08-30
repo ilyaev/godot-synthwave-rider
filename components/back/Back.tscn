@@ -1,14 +1,17 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://components/back/CityV1.shader" type="Shader" id=1]
+[ext_resource path="res://components/back/Blocks.shader" type="Shader" id=1]
+[ext_resource path="res://components/back/Back.gd" type="Script" id=2]
 
 [sub_resource type="PlaneMesh" id=1]
 size = Vector2( 110, 110 )
 
-[sub_resource type="ShaderMaterial" id=4]
+[sub_resource type="ShaderMaterial" id=2]
 shader = ExtResource( 1 )
+shader_param/t = 0.0
 
 [node name="Back" type="MeshInstance"]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 8, -21 )
 mesh = SubResource( 1 )
-material/0 = SubResource( 4 )
+material/0 = SubResource( 2 )
+script = ExtResource( 2 )
