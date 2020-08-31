@@ -11,10 +11,16 @@ const float PI2 = PI*2.;
 
 const float defaultBaseSize = .1;
 const float defaultBaseSpacing = .3;
-const vec3 bounds = vec3(15.0, 15.0, 0.);
+const vec3 bounds = vec3(150.0, .0, 2.);
 
 float N21(vec2 p) {
     return fract(sin(p.x * 132.33 + p.y*1433.43) * 55332.33);
+}
+
+mat2 rot2d(float a) {
+    float sa = sin(a);
+    float ca = cos(a);
+    return mat2(vec2(sa, ca), vec2(-ca, sa));
 }
 
 float DistLine(vec3 ro, vec3 rd, vec3 p) {
@@ -42,15 +48,34 @@ float sdPlane(vec3 p, float x, float y) {
 
 float getCubes(vec3 p) {
     float baseSpacing = defaultBaseSize + defaultBaseSpacing/2.;
+    p.y += .3;
+    p.x += sin(t/4.) * .2;
 
     vec3 l = bounds;
     vec3 rc1 = vec3(vec2(baseSpacing), 5.);
 
     vec3 id = round(p/rc1);
 
+    float n = N21(vec2((id.x + 1.)*(id.z + 1.) + 1320.));
+
     vec3 q1 = p - rc1 * clamp(id, -l, l);
-    q1.z += sin(id.y + t*id.x)*.1;
-    return mod((id.x + id.y), 2) == 0. ? sdBox(q1, vec3(.1, .1, .1)) : sdSphere(q1, .1);
+
+    q1.z += (n - .5) * .5;
+    q1.z += sin(t+n*3.)*n*.2;
+
+    q1.xz *= rot2d(id.x + fract(n*322.33) + sin(t+n*PI)*n*.1);
+
+    // q1.xz *= rot2d(p.y*2. + sin(t + n*PI)*PI + id.x*PI/8. + t);
+
+    float bw = .1;
+    bw *= min(1., fract(n*123.33) + .4);
+    bw = mix(bw, .01, p.y*n);
+    // bw -= clamp(sin(p.y + t + id.x*PI)*.08, 0., .075);
+    float bh = .4 + id.z/2.;
+    bh *= min(1., n + .3);
+    bh += sin(t+n*5.)*n*.03;
+    q1.y -= bh - id.z/2.;
+    return sdBox(q1, vec3(bw, bh, bw)) * .7;
 }
 
 vec3 getDist(vec3 p) {
@@ -58,7 +83,7 @@ vec3 getDist(vec3 p) {
     // float dS = sdSphere(p - vec3(0., .5, 0.), .5);
     // vec3 p = p * rot
     // float dS = sdBox(p - vec3(0., .0, 0.), vec3(.1));
-    float dS = getCubes(p - vec3(0., 0., 0.));
+    float dS = getCubes(p - vec3(0., 0., 0.))*.6;
     // float dP = sdPlane(p, 0., -.5);
     float d = dS;
     // d = min(d, dP);
@@ -77,7 +102,7 @@ vec4 trace(vec3 ro, vec3 rd) {
     for(int i = 0 ; i < MAX_STEPS ; i++) {
         p = ro + rd * dt;
         dist = getDist(p);
-        dt += dist.x * .5;
+        dt += dist.x;
         if (abs(dist.x) < MIN_DIST || dist.x > FAR_DIST) {
             break;
         }
@@ -146,8 +171,10 @@ void fragment() {
     vec3 col = vec3(0.);
     vec2 uv = (1. - UV) - .5;
 
-    float a = atan(uv.x, uv.y);
-    float d = length(uv);
+    // float a = atan(uv.x, uv.y);
+    // float d = length(uv);
+    // float a = atan(uv.x,uv.y) + sin(TIME)*.2;
+    // float d = pow(.7/length(uv), 1.5 + cos(TIME)*.7) + sin(fract(a*2.))*.1;
 
     // uv = vec2(a,d);
 
@@ -155,9 +182,9 @@ void fragment() {
     float ot = 1.;
 
     // vec3 ro = vec3(0. + ot*sin(t)*PI, 0. + ot*cos(t)*PI, -3.);
-    vec3 ro = vec3(0. + ot*sin(t)*PI, 0. + ot*cos(t)*PI, -3.);
-    vec3 lookat = vec3(0. + sin(t));
-    float zoom = 1. + sin(t)*.3;
+    vec3 ro = vec3(sin(t/2.)*.3, 0., -3.+sin(t*3.)*.05);
+    vec3 lookat = vec3(0.);
+    float zoom = 1.;// + sin(t)*.3;
 
     vec3 f = normalize(lookat - ro);
     vec3 r = normalize(cross(vec3(0., 1., 0.), f));
