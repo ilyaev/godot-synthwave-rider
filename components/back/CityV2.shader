@@ -2,6 +2,7 @@ shader_type spatial;
 render_mode unshaded;
 
 uniform float t : hint_range(0, 2) = 0;
+uniform sampler2D noise;
 
 const int MAX_STEPS = 256;
 const float MIN_DIST = 0.001;
@@ -49,7 +50,7 @@ float sdPlane(vec3 p, float x, float y) {
 float getCubes(vec3 p) {
     float baseSpacing = defaultBaseSize + defaultBaseSpacing/2.;
     p.y += .3;
-    p.x += sin(t/4.) * .2;
+
 
     vec3 l = bounds;
     vec3 rc1 = vec3(vec2(baseSpacing), 5.);
@@ -57,11 +58,12 @@ float getCubes(vec3 p) {
     vec3 id = round(p/rc1);
 
     float n = N21(vec2((id.x + 1.)*(id.z + 1.) + 1320.));
+    // float nh = max(0., texture(noise, id.xz/10. + vec2(0., 0.)).r - .0) * 2.;
 
     vec3 q1 = p - rc1 * clamp(id, -l, l);
 
     q1.z += (n - .5) * .5;
-    q1.z += sin(t+n*3.)*n*.2;
+    q1.z += sin(t/3.+n*13.)*n*.2;
 
     q1.xz *= rot2d(id.x + fract(n*322.33) + sin(t+n*PI)*n*.1);
 
@@ -69,12 +71,13 @@ float getCubes(vec3 p) {
 
     float bw = .1;
     bw *= min(1., fract(n*123.33) + .4);
-    bw = mix(bw, .01, p.y*n);
+    // bw = mix(bw, .01, p.y*n);
     // bw -= clamp(sin(p.y + t + id.x*PI)*.08, 0., .075);
     float bh = .4 + id.z/2.;
-    bh *= min(1., n + .3);
-    bh += sin(t+n*5.)*n*.03;
+    bh *= min(1., n + .7);
+    bh += sin(t+n*15.)*n*.05;
     q1.y -= bh - id.z/2.;
+    q1.x += sin(t/4. + n*10.) * (.1 - bw);
     return sdBox(q1, vec3(bw, bh, bw)) * .7;
 }
 
@@ -133,7 +136,7 @@ vec3 getNormalByMaterial(float material, vec3 p) {
 vec3 getAlbedoByMaterial(float material, vec3 p) {
     vec3 albedo = vec3(1.);
     if (material == 1.) {
-        albedo = vec3(0., 1., 0.);
+        albedo = vec3(1., 1., 1.);
         // albedo = vec3(cos(p.x*p.y - t/2.), 1., sin(p.x*p.y + t)) * abs(p.z);
         // albedo = vec3(sin(t)*cos(t*2.), sin(t), cos(t));
         } else if (material == 0.) {
@@ -169,22 +172,26 @@ vec3 getSpecularColor(vec3 p, vec3 n, vec3 lightPos, vec3 viewPos) {
 
 void fragment() {
     vec3 col = vec3(0.);
-    vec2 uv = (1. - UV) - .5;
+    vec2 uv = (vec2(1.) - UV) - .5;
+    // uv /= 5.5;
 
+    uv += vec2(0., .05);
     // float a = atan(uv.x, uv.y);
-    // float d = length(uv);
+    // float d = .04/length(uv);
+    // uv = vec2(a,d);
     // float a = atan(uv.x,uv.y) + sin(TIME)*.2;
     // float d = pow(.7/length(uv), 1.5 + cos(TIME)*.7) + sin(fract(a*2.))*.1;
 
-    // uv = vec2(a,d);
+
 
     // float t = TIME;
     float ot = 1.;
 
     // vec3 ro = vec3(0. + ot*sin(t)*PI, 0. + ot*cos(t)*PI, -3.);
-    vec3 ro = vec3(sin(t/2.)*.3, 0., -3.+sin(t*3.)*.05);
+    // vec3 ro = vec3(sin(t/2.)*.3, 0., -3.+sin(t*3.)*.05);
+    vec3 ro = vec3(0.,0.,-3.);
     vec3 lookat = vec3(0.);
-    float zoom = 1.;// + sin(t)*.3;
+    float zoom = .5;// + sin(t)*.3;
 
     vec3 f = normalize(lookat - ro);
     vec3 r = normalize(cross(vec3(0., 1., 0.), f));
@@ -205,8 +212,8 @@ void fragment() {
         vec3 normal = getNormalByMaterial(materialID, p);
         vec3 albedo = getAlbedoByMaterial(materialID, p);
         vec3 diffuse = getLightColor(p, normal, lightPos);
-        // vec3 specular = vec3(0.);
-        vec3 specular = getSpecularColor(p, normal, lightPos, ro);
+        vec3 specular = vec3(0.);
+        // vec3 specular = getSpecularColor(p, normal, lightPos, ro);
         float ambient = .1;
         float fade = 1.;// - abs(p.z)/5.;
         col = clamp((ambient + diffuse + specular) * albedo, 0., 1.) * fade;
@@ -216,6 +223,6 @@ void fragment() {
     // col += DrawPoint(ro, rd, vec3(sin(TIME)*.2, cos(TIME)*.2, sin(TIME*10.)*.9));// * vec3(1., 0., 0.);
     // col += vec3(step(.2, uv.y));
     ALBEDO.rgb = col;
-    ALPHA = smoothstep(0.,.00001, col.r + col.g + col.b);
+    // ALPHA = smoothstep(0.,.00001, col.r + col.g + col.b);
     // ALPHA = col.g;
 }

@@ -11,12 +11,12 @@ void fragment() {
     // p = fract(p*vec2(1., 1.0) + vec2(0., .75));
     // p +=  .2;
 
-    p -= .5 + sin(TIME)*.1;
-    p *= 5.5 + ((sin(TIME + UV.x+UV.y) + .5)*.5);
+    p -= .5;// + sin(TIME)*.1;
+    p *= 5.5;// + ((sin(TIME + UV.x+UV.y) + .5)*.5);
 
     p+= vec2(0., .5);
-    float a = atan(p.x,p.y) + sin(TIME)*.2;
-    float d = pow(.7/length(p), 1.5 + cos(TIME)*.7) + sin(fract(a*2.))*.1;
+    float a = atan(p.x,p.y);// + sin(TIME)*.2;
+    float d =  1./length(p);// pow(.7/length(p), 1.5 + cos(TIME)*.7) + sin(fract(a*2.))*.1;
 
     p = vec2(a,d);
 
@@ -28,7 +28,7 @@ void fragment() {
             col = depth / 20.;
         }
     }
-
+    // col = step(p.y, .5);
     ALBEDO.rgb = vec3(col);
     ALPHA = step(.1, col);
 }
