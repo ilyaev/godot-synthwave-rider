@@ -6,20 +6,25 @@
 [sub_resource type="PlaneMesh" id=1]
 size = Vector2( 110, 110 )
 
-[sub_resource type="OpenSimplexNoise" id=3]
+[sub_resource type="OpenSimplexNoise" id=2]
 seed = 5
+octaves = 4
+persistence = 0.646
+lacunarity = 3.27
 
-[sub_resource type="NoiseTexture" id=4]
+[sub_resource type="NoiseTexture" id=3]
 seamless = true
-noise = SubResource( 3 )
+noise = SubResource( 2 )
 
-[sub_resource type="ShaderMaterial" id=2]
+[sub_resource type="ShaderMaterial" id=4]
 shader = ExtResource( 1 )
-shader_param/t = 1.313
-shader_param/noise = SubResource( 4 )
+shader_param/t = 77.806
+shader_param/LightPosition = Vector3( 2, 2, -1.5 )
+shader_param/noiseSeed = 1320.0
+shader_param/noise = SubResource( 3 )
 
 [node name="Back" type="MeshInstance"]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 8, -21 )
 mesh = SubResource( 1 )
-material/0 = SubResource( 2 )
+material/0 = SubResource( 4 )
 script = ExtResource( 2 )

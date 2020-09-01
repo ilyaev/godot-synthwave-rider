@@ -1,8 +1,10 @@
 shader_type spatial;
 render_mode unshaded;
 
-uniform float t : hint_range(0, 2) = 0;
+uniform float t : hint_range(0, 100) = 0;
 uniform sampler2D noise;
+uniform vec3 LightPosition = vec3(1., 2., -1.5);
+uniform float noiseSeed : hint_range(1, 2000) = 1320.;
 
 const int MAX_STEPS = 256;
 const float MIN_DIST = 0.001;
@@ -13,6 +15,7 @@ const float PI2 = PI*2.;
 const float defaultBaseSize = .1;
 const float defaultBaseSpacing = .3;
 const vec3 bounds = vec3(150.0, .0, 2.);
+const float cityShiftSpeed = 8.;
 
 float N21(vec2 p) {
     return fract(sin(p.x * 132.33 + p.y*1433.43) * 55332.33);
@@ -47,52 +50,52 @@ float sdPlane(vec3 p, float x, float y) {
     return p.y - y;
 }
 
+float getBuildingHeight(vec3 id, float n) {
+    float tScaled = t / cityShiftSpeed;
+    float bh = .4 + id.z/2.;
+    bh *= min(1., n + .7);
+    bh += sin(tScaled+n*15.)*n*.01;
+    bh += .2 - abs(id.x/3.)*.15;
+    return bh;
+}
+
+float getBuildingNoise(vec3 id, float iTime) {
+    return N21(vec2((id.x + 1.)*(id.z + 1.) + noiseSeed + floor(iTime)));
+}
+
 float getCubes(vec3 p) {
     float baseSpacing = defaultBaseSize + defaultBaseSpacing/2.;
     p.y += .3;
 
 
     vec3 l = bounds;
-    vec3 rc1 = vec3(vec2(baseSpacing), 5.);
-
+    vec3 rc1 = vec3(vec2(baseSpacing), 3.);
     vec3 id = round(p/rc1);
-
-    float n = N21(vec2((id.x + 1.)*(id.z + 1.) + 1320.));
-    // float nh = max(0., texture(noise, id.xz/10. + vec2(0., 0.)).r - .0) * 2.;
-
     vec3 q1 = p - rc1 * clamp(id, -l, l);
 
-    q1.z += (n - .5) * .5;
-    q1.z += sin(t/3.+n*13.)*n*.2;
+    float tScaled = t / cityShiftSpeed;
 
-    q1.xz *= rot2d(id.x + fract(n*322.33) + sin(t+n*PI)*n*.1);
+    float n = getBuildingNoise(id, floor(tScaled));
+    float n1 = getBuildingNoise(id, floor(tScaled + 1.));
 
-    // q1.xz *= rot2d(p.y*2. + sin(t + n*PI)*PI + id.x*PI/8. + t);
+    q1.z += mix((n - .5) * .5, (n1 - .5) * .5, fract(tScaled));
+    q1.z += mix(sin(tScaled/3.+n*13.)*n*.2, sin(tScaled/3.+n1*13.)*n1*.2, fract(tScaled));
 
-    float bw = .1;
-    bw *= min(1., fract(n*123.33) + .4);
-    // bw = mix(bw, .01, p.y*n);
-    // bw -= clamp(sin(p.y + t + id.x*PI)*.08, 0., .075);
-    float bh = .4 + id.z/2.;
-    bh *= min(1., n + .7);
-    bh += sin(t+n*15.)*n*.05;
+    q1.xz *= rot2d(mix(id.x + fract(n*322.33) + sin(tScaled+n*PI)*n*3., id.x + fract(n1*322.33) + sin(tScaled+n1*PI)*n1*3., fract(tScaled)));
+
+    float bw = .1 * min(1., mix(fract(n*123.33) + .4, fract(n1*123.33) + .4, fract(tScaled)));
+    float bh = mix(getBuildingHeight(id, n), getBuildingHeight(id, n1), fract(tScaled));
+
     q1.y -= bh - id.z/2.;
-    q1.x += sin(t/4. + n*10.) * (.1 - bw);
-    return sdBox(q1, vec3(bw, bh, bw)) * .7;
+
+    return sdBox(q1, vec3(bw, bh, bw*mix(max(.5, n), max(.5,n1), fract(tScaled)))) * .7;
 }
 
 vec3 getDist(vec3 p) {
     float material = 0.;
-    // float dS = sdSphere(p - vec3(0., .5, 0.), .5);
-    // vec3 p = p * rot
-    // float dS = sdBox(p - vec3(0., .0, 0.), vec3(.1));
     float dS = getCubes(p - vec3(0., 0., 0.))*.6;
-    // float dP = sdPlane(p, 0., -.5);
     float d = dS;
-    // d = min(d, dP);
-    // if (d == dS) {
-        material = 1.;
-    // }
+    material = 1.;
     return vec3(d, material, 0.);
 }
 
@@ -150,10 +153,10 @@ vec3 getLightColor(vec3 p, vec3 n, vec3 lightPos) {
     vec3 l = normalize(lightPos - p);
     float dif = clamp(0., 1., dot(n,l));
 
-    float distanceToLight = trace(p + n * (MIN_DIST*2.), l).x;
-    if (distanceToLight < length(lightPos - p)) {
-        dif *= .5;
-    }
+    // float distanceToLight = trace(p + n * (MIN_DIST*2.), l).x;
+    // if (distanceToLight < length(lightPos - p)) {
+        //     dif *= .5;
+    // }
 
     return vec3(dif);
 }
@@ -191,7 +194,7 @@ void fragment() {
     // vec3 ro = vec3(sin(t/2.)*.3, 0., -3.+sin(t*3.)*.05);
     vec3 ro = vec3(0.,0.,-3.);
     vec3 lookat = vec3(0.);
-    float zoom = .5;// + sin(t)*.3;
+    float zoom = .6;// + sin(t)*.3;
 
     vec3 f = normalize(lookat - ro);
     vec3 r = normalize(cross(vec3(0., 1., 0.), f));
@@ -204,7 +207,7 @@ void fragment() {
     float materialID = tr.a;
     float distanceTo = tr.y;
 
-    vec3 lightPos = vec3(1. + cos(TIME)*3., 2. + sin(TIME*3.), -1.5);
+    vec3 lightPos = LightPosition;  //vec3(1. + cos(TIME*0.)*3., 2. + sin(TIME*3.*0.), -1.5);
 
     if (tr.x < MIN_DIST) {
         vec3 p = ro + rd * distanceTo;
@@ -215,7 +218,7 @@ void fragment() {
         vec3 specular = vec3(0.);
         // vec3 specular = getSpecularColor(p, normal, lightPos, ro);
         float ambient = .1;
-        float fade = 1.;// - abs(p.z)/5.;
+        float fade = 1. - abs(p.z)/5.;
         col = clamp((ambient + diffuse + specular) * albedo, 0., 1.) * fade;
     }
 

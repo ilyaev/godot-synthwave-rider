@@ -1,9 +1,10 @@
 extends MeshInstance
 
 var t;
-
+var light;
 
 func _ready():
+	# light = get_parent().get_node('Light').tra
 	t = 0;
 
 
