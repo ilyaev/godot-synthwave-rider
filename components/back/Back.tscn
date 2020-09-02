@@ -21,6 +21,8 @@ shader = ExtResource( 1 )
 shader_param/t = 77.806
 shader_param/LightPosition = Vector3( 2, 2, -1.5 )
 shader_param/noiseSeed = 1320.0
+shader_param/velocity = 0.0
+shader_param/shipShift = 0.0
 shader_param/noise = SubResource( 3 )
 
 [node name="Back" type="MeshInstance"]

@@ -43,6 +43,8 @@ func _process(delta):
 	var l = 0.25
 	var ta = (getDistortionY(coords.y + l, 17, 0.2) - ship.transform.origin.y) / l;
 	ship.rotation = Vector3(atan(ta), -0.1 * sign(velocity.x), 0)
+	back.setShipVelocity(velocity)
+	back.setShipPosition(coords)
 
 func getDistortionY(pos, shift, extra):
 	return sin((shift - pos) / waveYdistortion) +extra
