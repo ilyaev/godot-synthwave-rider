@@ -10,7 +10,9 @@ uniform float shipShift = 0.;
 
 const int MAX_STEPS = 256;
 const float MIN_DIST = 0.001;
-const float FAR_DIST = 10.;
+const float FAR_DIST = 2.;
+const float RAYMARCH_STEP = .9;
+
 const float PI = 3.1416;
 const float PI2 = PI*2.;
 
@@ -71,27 +73,43 @@ mat4 getCubes(vec3 p) {
     float baseSpacing = defaultBaseSize + defaultBaseSpacing/2.;
     p.y += .3;
 
+    float yStep = .1;
 
     vec3 l = bounds;
-    vec3 rc1 = vec3(vec2(baseSpacing), 3.);
+    vec3 rc1 = vec3(baseSpacing, yStep, 3.);
     vec3 id = round(p/rc1);
     vec3 q1 = p - rc1 * clamp(id, -l, l);
 
+    float veloRate = smoothstep(0., MAX_SPEED, velocity);
+
     float tScaled = t / cityShiftSpeed;
+    float elapsed = fract(tScaled);
 
     float n = getBuildingNoise(id, floor(tScaled));
     float n1 = getBuildingNoise(id, floor(tScaled + 1.));
 
-    q1.z += mix((n - .5) * .5, (n1 - .5) * .5, fract(tScaled));
-    q1.z += mix(sin(tScaled/3.+n*13.)*n*.2, sin(tScaled/3.+n1*13.)*n1*.2, fract(tScaled));
+    yStep += mix(.2 * n, .2 * n1, elapsed);
 
-    q1.xz *= rot2d(mix(id.x + fract(n*322.33) + sin(tScaled+n*PI)*n*3., id.x + fract(n1*322.33) + sin(tScaled+n1*PI)*n1*3., fract(tScaled)));
+    rc1 = vec3(baseSpacing, yStep, 3.);
+    id = round(p/rc1);
+    q1 = p - rc1 * clamp(id, -l, l);
 
-    float bw = .1 * min(1., mix(fract(n*123.33) + .4, fract(n1*123.33) + .4, fract(tScaled)));
-    float bh = mix(getBuildingHeight(id, n), getBuildingHeight(id, n1), fract(tScaled));
+    q1.z += mix((n - .5) * .5, (n1 - .5) * .5, elapsed);
+    q1.z += mix(sin(tScaled/3.+n*13.)*n*.2, sin(tScaled/3.+n1*13.)*n1*.2, elapsed);
+
+    float rotSpeed = mix(500.*(n - .5), 500.* (n1 - .5), elapsed);
+    float yOffset = id.y*sin(id.y)*mix(max(0., n - .87)*rotSpeed,max(0., n1 - .87)*rotSpeed, elapsed);
+    yOffset *= veloRate;
+
+    q1.xz *= rot2d(mix(yOffset + fract(n*322.33) + sin(tScaled+n*PI)*n*3., yOffset + fract(n1*322.33) + sin(tScaled+n1*PI)*n1*3., elapsed));
+
+    float bw = .1 * min(1., mix(fract(n*123.33) + .4, fract(n1*123.33) + .4, elapsed));
+    float bh = mix(getBuildingHeight(id, n), getBuildingHeight(id, n1), elapsed);
+
+    // bw *= 1. - q1.y * mix(min(.2, n), min(.2, n1), elapsed);
 
     q1.y -= bh - id.z/2.;
-    return mat4(vec4(sdBox(q1, vec3(bw, bh, bw*mix(max(.5, n), max(.5,n1), fract(tScaled)))) * .7, q1), vec4(bw,bw,bh,0.), vec4(0.), vec4(0.));
+    return mat4(vec4(sdBox(q1, vec3(bw, bh, bw*mix(max(.5, n), max(.5,n1), elapsed))), q1) * RAYMARCH_STEP, vec4(bw,bw,bh,0.), vec4(0.), vec4(0.));
 }
 
 mat3 getDist(vec3 p) {
@@ -249,7 +267,7 @@ void fragment() {
     // vec3 ro = vec3(sin(t/2.)*.3, 0., -3.+sin(t*3.)*.05);
     vec3 ro = vec3(0.,0.,-3.);
     vec3 lookat = vec3(0.);
-    float zoom = .6 + max(-.2, sin(velocity/MAX_SPEED * PI/2.)*.3);  //pow(velocity / 80., 3.);// + sin(t)*.3;
+    float zoom = .6 + sin(velocity/MAX_SPEED * PI/2.)*.1;  //pow(velocity / 80., 3.);// + sin(t)*.3;
 
     vec3 f = normalize(lookat - ro);
     vec3 r = normalize(cross(vec3(0., 1., 0.), f));
@@ -281,7 +299,7 @@ void fragment() {
 
     // col += DrawPoint(ro, rd, vec3(sin(TIME)*.2, cos(TIME)*.2, sin(TIME*10.)*.9));// * vec3(1., 0., 0.);
     // col += vec3(step(.2, uv.y));
-    ALBEDO.rgb = col;// * vec3(sin(t), cos(t), sin(t*2.));
+    ALBEDO.rgb = col;// * vec3(sin(t), sin(t*2. - uv.x), sin(t*2. + uv.x));
     ALPHA = smoothstep(0.,.1, col.r + col.g + col.b);
     // ALPHA = col.g;
 }
