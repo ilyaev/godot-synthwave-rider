@@ -22,6 +22,10 @@ uniform bool mountain_base = true;
 
 const mat2 m = mat2(vec2( 1.6,  1.2), vec2(-1.2,  1.6 ));
 
+float N21(vec2 p) {
+    return fract(sin(p.x * 132.33 + p.y*1433.43) * 55332.33);
+}
+
 vec2 hash( vec2 p ) {
     p = vec2(dot(p,vec2(127.1,311.7)), dot(p,vec2(269.5,183.3)));
     return -1.0 + 2.0*fract(sin(p)*43758.5453123);
@@ -57,14 +61,29 @@ void vertex() {
     // h += 1.7 * sin(VERTEX.z - t) + fract((VERTEX.z - t) / 12.);
     // h += cos(VERTEX.x / 6. + (size.x / 2.)) * sin((VERTEX.z - t) / 3.);
 
-    float maxH = mountain_height;
+
     // maxH *= sin(TIME/2. + VERTEX.x*13.);
 
     // h += max(0., texture(noise, (UV + vec2(.3, t))).r * maxH - (maxH * .55));
     // h += max(0., texture(noise_major, (UV + vec2(0, t))).r * maxH - (maxH * .58));
 
     // h += Noise((UV - vec2(1.3, pos/size.y)) * mountain_sharpness, 4) * maxH - (maxH * mountain_density);
-    h += (fbm((UV - vec2(1.3, pos/size.y)) * mountain_sharpness, 3) * maxH - (maxH * mountain_density));
+    // h += (fbm((UV - vec2(1.3, pos/size.y)) * mountain_sharpness, 3) * maxH - (maxH * mountain_density));
+
+    float n = N21(vec2(VERTEX.x, VERTEX.x));
+    float morphSpeed = 16.;
+    float tScaled = (TIME + (VERTEX.z - t) + n)/morphSpeed;
+
+    float hId = floor(tScaled);
+
+    float maxH = mountain_height;
+
+    float mHeight = (fbm((UV - vec2(1.3 + hId, pos/size.y)) * mountain_sharpness, 3) * maxH - (maxH * mountain_density));
+    float mHeightNext = (fbm((UV - vec2(1.3 + hId + 1., pos/size.y)) * mountain_sharpness, 3) * maxH - (maxH * mountain_density));
+
+
+    h += mix(mHeight, mHeightNext, fract(tScaled));
+
     if (mountain_base) {
         h = max(0, h) + (fbm((UV - vec2(1.3, pos/size.y)) * 1., 2) * 600. - (maxH * mountain_density));
     }
@@ -121,4 +140,9 @@ void fragment() {
     col += (1. - cRoad) *  step(.01, sin((UV.y - shift) * 60.)) * (1. - cDelimeter) * road_color.rgb;
 
     ALBEDO.rgb = col;
+    // if (cRoad == 0.) {
+        //     ALPHA = 0.9;
+        //     } else {
+        //     ALPHA = 1.;
+    // }
 }

@@ -71,6 +71,13 @@ float getBuildingNoise(vec3 id, float iTime) {
 
 mat4 getCubes(vec3 p) {
     float baseSpacing = defaultBaseSize + defaultBaseSpacing/2.;
+
+    // float sID = floor(t);
+    // float sN = N21(vec2(sID));
+    // float sNnext = N21(vec2(sID+1.));
+
+    // baseSpacing += 0.1*mix(sN, sNnext, fract(t));
+
     p.y += .3;
 
     float yStep = .1;
@@ -97,8 +104,8 @@ mat4 getCubes(vec3 p) {
     q1.z += mix((n - .5) * .5, (n1 - .5) * .5, elapsed);
     q1.z += mix(sin(tScaled/3.+n*13.)*n*.2, sin(tScaled/3.+n1*13.)*n1*.2, elapsed);
 
-    float rotSpeed = mix(500.*(n - .5), 500.* (n1 - .5), elapsed);
-    float yOffset = id.y*sin(id.y)*mix(max(0., n - .87)*rotSpeed,max(0., n1 - .87)*rotSpeed, elapsed);
+    float rotSpeed = mix(300.*(n - .5), 300.* (n1 - .5), elapsed);
+    float yOffset = id.y*sin(id.y)*mix(max(0., n - .88)*rotSpeed,max(0., n1 - .88)*rotSpeed, elapsed);
     yOffset *= veloRate;
 
     q1.xz *= rot2d(mix(yOffset + fract(n*322.33) + sin(tScaled+n*PI)*n*3., yOffset + fract(n1*322.33) + sin(tScaled+n1*PI)*n1*3., elapsed));
@@ -106,10 +113,13 @@ mat4 getCubes(vec3 p) {
     float bw = .1 * min(1., mix(fract(n*123.33) + .4, fract(n1*123.33) + .4, elapsed));
     float bh = mix(getBuildingHeight(id, n), getBuildingHeight(id, n1), elapsed);
 
+    // bh -= q1.y*q1.x;
+
     // bw *= 1. - q1.y * mix(min(.2, n), min(.2, n1), elapsed);
 
     q1.y -= bh - id.z/2.;
-    return mat4(vec4(sdBox(q1, vec3(bw, bh, bw*mix(max(.5, n), max(.5,n1), elapsed))), q1) * RAYMARCH_STEP, vec4(bw,bw,bh,0.), vec4(0.), vec4(0.));
+    float bw2 = bw*mix(max(.5, n), max(.5,n1), elapsed);
+    return mat4(vec4(sdBox(q1, vec3(bw, bh, bw2)), q1) * RAYMARCH_STEP, vec4(bw,bh,bw2,0.), vec4(0.), vec4(0.));
 }
 
 mat3 getDist(vec3 p) {
@@ -192,8 +202,8 @@ vec3 getCubeUV(vec3 p, vec3 normal, vec3 fsize) {
     return vec3(cuv, r);
 }
 
-vec3 getBuildingColor(vec2 uv, vec3 normal, vec3 size) {
-    vec3 baseColor = vec3(.9 + sin(t), cos(t), sin(t*4.));
+vec3 getBuildingBacklitColor(vec2 uv, vec3 normal, vec3 size) {
+    vec3 baseColor = vec3(.9 + sin(t*2.), cos(t), sin(t));
     baseColor *= max(.1, velocity/MAX_SPEED * .7);
 
     if (abs(normal.y) > 0.001) {
@@ -201,24 +211,28 @@ vec3 getBuildingColor(vec2 uv, vec3 normal, vec3 size) {
     }
     // float frame = step(size.z, uv.x);
     // return baseColor * frame;
-    return max(vec3(.15), vec3(pow(.6/uv.y, 1. + (velocity/MAX_SPEED * 2.))) * baseColor); //* step(sin(t), uv.y);
+    return max(vec3(.15), vec3(pow(.6/uv.y, 1. + (velocity/MAX_SPEED * 2.5))) * baseColor); //* step(sin(t), uv.y);
+}
+
+vec3 getBuildingTexture(vec2 uv, vec3 normal, vec3 size) {
+    vec3 baseColor = vec3(.9 + sin(t*2.), cos(t), sin(t));
+    baseColor *= max(.1, velocity/MAX_SPEED * .7);
+
+    if (abs(normal.y) > 0.001) {
+        return baseColor;
+    }
+    // float frame = step(abs(sin(t)), uv.y);
+    // return baseColor * frame;
+    return max(vec3(.15), vec3(pow(.6/uv.y, 1. + (velocity/MAX_SPEED * 2.5))) * baseColor); //* step(sin(t), uv.y);
 }
 
 vec3 getAlbedoByMaterial(float material, vec3 p, vec3 normal, mat4 trm) {
     vec3 albedo = vec3(1.);
-    if (material == 1.) {
-
-        vec3 uv = getCubeUV(p, normal, trm[2].xyz);
-        vec3 col = getBuildingColor(uv.yx + vec2(.0, 0.5), normal, trm[2].xyz);
-        // float col = step(.1, uv.x - .5);
-        albedo = col;
-        // albedo = vec3(1., 1., 1.) * col;
-        // albedo = vec3(cos(p.x*p.y - t/2.), 1., sin(p.x*p.y + t)) * abs(p.z);
-        // albedo = vec3(sin(t)*cos(t*2.), sin(t), cos(t));
-        } else if (material == 0.) {
-        float size = 8.;
-        albedo *= step(0.0001, sin(p.x*size)+sin(p.z*size));
-    }
+    vec3 backLit = getCubeUV(p, normal, trm[2].xxy);
+    vec3 backLitColor = getBuildingBacklitColor(backLit.yx + vec2(.0, 0.5), normal, trm[2].xyz);
+    // vec3 uv = getCubeUV(p, normal, trm[2].xyz);
+    // vec3 textureColor = getBuildingTexture(uv.yx, normal, trm[2].xyz);
+    albedo = backLitColor;
     return albedo;
 }
 
@@ -281,7 +295,7 @@ void fragment() {
     float materialID = tr.a;
     float distanceTo = tr.y;
 
-    vec3 lightPos = LightPosition;  //vec3(1. + cos(TIME*0.)*3., 2. + sin(TIME*3.*0.), -1.5);
+    vec3 lightPos = LightPosition;// * vec3(0., 2., sin(t*10.)*-2.);//vec3(1. + cos(TIME*0.)*3., 2. + sin(TIME*3.*0.), -1.5);
 
     if (tr.x < MIN_DIST) {
         vec3 p = ro + rd * distanceTo;
