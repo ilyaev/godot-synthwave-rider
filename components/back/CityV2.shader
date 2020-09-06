@@ -10,7 +10,7 @@ uniform float shipShift = 0.;
 
 const int MAX_STEPS = 256;
 const float MIN_DIST = 0.001;
-const float FAR_DIST = 2.;
+const float FAR_DIST = 3.;
 const float RAYMARCH_STEP = .9;
 
 const float PI = 3.1416;
@@ -22,6 +22,38 @@ const vec3 bounds = vec3(150.0, .0, 2.);
 const float cityShiftSpeed = 8.;
 
 const float MAX_SPEED = 50.;
+
+const bool NO_BUILDINGS = false;
+
+float hexDist(vec2 uv) {
+    uv = abs(uv);
+    return max(uv.x, dot(uv, normalize(vec2(1., 1.73))));
+}
+
+vec4 hexCoords(vec2 uv) {
+
+
+    vec2 r = vec2(1., 1.73);
+    vec2 h = r * .5;
+
+    vec2 a = mod(uv, r) - h;
+    vec2 b = mod(uv - h, r) - h;
+
+    vec2 gv;
+
+    if (length(a) < length(b)) {
+        gv = a;
+        } else {
+        gv = b;
+    }
+
+    float x = atan(gv.x, gv.y);
+    float y = .5 - hexDist(gv);
+
+    vec2 id = uv - gv;
+
+    return vec4(x, y, id.xy);
+}
 
 float N21(vec2 p) {
     return fract(sin(p.x * 132.33 + p.y*1433.43) * 55332.33);
@@ -70,6 +102,9 @@ float getBuildingNoise(vec3 id, float iTime) {
 }
 
 mat4 getCubes(vec3 p) {
+    if (NO_BUILDINGS) {
+        return mat4(vec4(sdBox(p, vec3(.1, .1, .1)), p) * RAYMARCH_STEP, vec4(.1,.1,.1,0.), vec4(0.), vec4(0.));
+    }
     float baseSpacing = defaultBaseSize + defaultBaseSpacing/2.;
 
     // float sID = floor(t);
@@ -122,13 +157,22 @@ mat4 getCubes(vec3 p) {
     return mat4(vec4(sdBox(q1, vec3(bw, bh, bw2)), q1) * RAYMARCH_STEP, vec4(bw,bh,bw2,0.), vec4(0.), vec4(0.));
 }
 
+float getSky(vec3 p) {
+    return -(length(p) - 10.);
+}
+
 mat3 getDist(vec3 p) {
     float material = 0.;
     mat4 cubesm = getCubes(p - vec3(shipShift/5. * smoothstep(0., MAX_SPEED, velocity), 0., 0.))*.4;
     vec4 cubes = cubesm[0];
-    float dS = cubes.x;
-    float d = dS;
+    float dB = cubes.x;
+    float dS = getSky(p);
+    float d = min(dB, dS);
     material = 1.;
+    if (d == dS) {
+        material = 2.;
+        return mat3(vec3(d, material, 0.), p, cubesm[1].xyz);
+    }
     return mat3(vec3(d, material, 0.), cubes.yzw, cubesm[1].xyz);
 }
 
@@ -226,13 +270,66 @@ vec3 getBuildingTexture(vec2 uv, vec3 normal, vec3 size) {
     return max(vec3(.15), vec3(pow(.6/uv.y, 1. + (velocity/MAX_SPEED * 2.5))) * baseColor); //* step(sin(t), uv.y);
 }
 
+vec3 getSkyTexture(vec3 p) {
+    vec3 q1 = p;
+    q1.yz *= rot2d(PI/2.5 + sin(t)*(PI/16.));
+    // q1.xy *= rot2d(PI/2.5 + sin(t)*(PI/16.));
+    p = q1;
+
+    vec3 col = vec3(.0);
+    // float x = acos(p.y/length(p));
+    // float y = atan(p.z, p.x) / PI2 ;
+    // vec2 uv = vec2(x, y);
+
+    // uv = fract(uv*vec2(10., 31.4));
+
+    float scale = .7;
+
+    float n = N21(vec2(floor(t), 342.)) - .5;
+    float n1 = N21(vec2(floor(t) + 1., 342.)) -.5;
+
+    scale += .5 * mix(n, n1, fract(t));
+
+    vec4 hex = hexCoords(p.xy*vec2(1., 1.0)*scale - vec2(shipShift*.5, shipShift*.2*sign(shipShift)));// + vec2(iTime, iTime*1.2));//*(1. + (sin(iTime)*.5 + .5)*5.));
+    // col += step(hex.y, .02 * clamp(sin(t), 0., .1)*4.);
+
+    // float t = t*3.;// + hex.z*hex.w*10.;
+
+    float flick = smoothstep(.9, 1., sin(n + n1*4. + t + sin(t)/cos(t + sin(t*3.+t) + n)) * .5 + .5) * step(10., velocity);
+
+
+    vec3 gridColor = mix(vec3(0., 1., 1.), mix(vec3(1.,0.,0.), vec3(0.,1.,0.), sin(t + n*10.)), cos(t/2. + n1*5.));
+    // vec3 gridColor = vec3(0., 1., 1.);
+
+
+    float matte = 1.;
+    float mn = N21(abs(hex.ba) + floor(t)) - .5;
+    float mn1 = N21(abs(hex.ba) + floor(t + 1.)) -.5;
+
+    matte += 1. * mix(mn, mn1, fract(t));
+
+    col += pow(.03/hex.y, 1.7) * gridColor;
+    // col += vec3(N21(hex.ba + 100.)*gridColor)*matte;
+    col += matte * gridColor;
+
+    col *= flick;
+
+    // return vec3(uv.x, uv.y, 0.);
+
+    return col;
+}
+
 vec3 getAlbedoByMaterial(float material, vec3 p, vec3 normal, mat4 trm) {
     vec3 albedo = vec3(1.);
-    vec3 backLit = getCubeUV(p, normal, trm[2].xxy);
-    vec3 backLitColor = getBuildingBacklitColor(backLit.yx + vec2(.0, 0.5), normal, trm[2].xyz);
-    // vec3 uv = getCubeUV(p, normal, trm[2].xyz);
-    // vec3 textureColor = getBuildingTexture(uv.yx, normal, trm[2].xyz);
-    albedo = backLitColor;
+    if ( material == 2.) {
+        albedo = getSkyTexture(p);
+        } else {
+        vec3 backLit = getCubeUV(p, normal, trm[2].xxy);
+        vec3 backLitColor = getBuildingBacklitColor(backLit.yx + vec2(.0, 0.5), normal, trm[2].xyz);
+        // vec3 uv = getCubeUV(p, normal, trm[2].xyz);
+        // vec3 textureColor = getBuildingTexture(uv.yx, normal, trm[2].xyz);
+        albedo = backLitColor;
+    }
     return albedo;
 }
 
@@ -306,7 +403,10 @@ void fragment() {
         vec3 specular = vec3(0.);
         // vec3 specular = getSpecularColor(p, normal, lightPos, ro);
         float ambient = .1;
-        float fade = 1. - abs(p.z)/5.;
+        float fade = 1.;
+        if (materialID == 1.) {
+            fade -= abs(p.z)/5.;
+        }
         col = clamp((ambient + diffuse + specular) * albedo, 0., 1.) * fade;
     }
 
@@ -314,6 +414,11 @@ void fragment() {
     // col += DrawPoint(ro, rd, vec3(sin(TIME)*.2, cos(TIME)*.2, sin(TIME*10.)*.9));// * vec3(1., 0., 0.);
     // col += vec3(step(.2, uv.y));
     ALBEDO.rgb = col;// * vec3(sin(t), sin(t*2. - uv.x), sin(t*2. + uv.x));
-    ALPHA = smoothstep(0.,.1, col.r + col.g + col.b);
+    if (materialID == 1.) {
+        ALPHA = smoothstep(0.,.1, col.r + col.g + col.b);
+        } else if (materialID == 2.) {
+        // ALPHA = smoothstep(0.,.4, col.r + col.g + col.b);
+        ALPHA = abs(sin(t/4. + uv.y*.8) + cos(t/2. + uv.x*.3)) * step(10., velocity);//smoothstep(0.,.4, col.r + col.g + col.b);
+    }
     // ALPHA = col.g;
 }

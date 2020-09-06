@@ -49,6 +49,7 @@ script = ExtResource( 1 )
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0, 12, -14 )
 amount = 120
 lifetime = 3.0
+visible = true
 speed_scale = 2.0
 process_material = SubResource( 1 )
 draw_pass_1 = SubResource( 2 )

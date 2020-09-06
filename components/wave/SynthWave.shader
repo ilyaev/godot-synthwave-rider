@@ -128,7 +128,11 @@ void fragment() {
 
     if (grid_show) {
         vec3 gvColor = grid_color.rgb * smoothstep(1., 0., h/2.);
-        col += smoothstep(.0, .2, sdBox(uv - 1., vec2(.45))) * gvColor * 6.;
+        //float zScale = UV.y - 1.;
+        //zScale *= min(.3, smoothstep(.8, 0., UV.y));
+        //zScale *= smoothstep(0., h, .1);
+        float zScale = 0.;
+        col += (smoothstep(.0, .2, sdBox(uv - 1., vec2(.45 + zScale))) * gvColor * 6.);
     }
 
     float shift = pos / size.y;
