@@ -114,12 +114,13 @@ float sdBox( in vec2 p, in vec2 b )
     return length(max(d,0.0)) + min(max(d.x,d.y),0.0);
 }
 
-void fragment() {
-    vec2 uv = fract(UV * size) + .5;
+vec3 draw(vec2 gUV, vec4 gCOLOR, vec2 uvShift) {
+    vec2 uv = fract(gUV * size) + .5 + uvShift;
+    // vec2 id = floor(gUV * size);
     vec3 col = vec3(0.,0.,0.);
     float t = pos * ((size - vec2(1., 1.))/size).y;
 
-    float h = COLOR.r;
+    float h = gCOLOR.r;
 
     if (base_color_show) {
         vec3 vColor = smoothstep(.0, 1., h/2.) * base_color.rgb;
@@ -136,13 +137,31 @@ void fragment() {
     }
 
     float shift = pos / size.y;
-    float x = UV.x;
-    float cRoad = step(.5408, UV.x) + step(UV.x, .4593);
+    float x = gUV.x;
+    float cRoad = step(.5408, gUV.x) + step(gUV.x, .4593);
     float cDelimeter = (step(.502, x) + step(x, .498));
 
     col *= cRoad;
-    col += (1. - cRoad) *  step(.01, sin((UV.y - shift) * 60.)) * (1. - cDelimeter) * road_color.rgb;
+    col += (1. - cRoad) *  step(.01, sin((gUV.y - shift) * 60.)) * (1. - cDelimeter) * road_color.rgb;
+    return col;
+}
 
+void fragment() {
+    vec3 col = vec3(0.);
+
+    col = draw(UV, COLOR, vec2(0.));
+
+    // float A = 4.;  // Change A to define the level of anti-aliasing (1 to 16) ... higher numbers are REALLY slow!
+    // float s = 1./A;
+    // float x;
+    // float y;
+
+    // float b =  .25;//1. * abs(sin(TIME));
+
+    // for (x=-b; x<b; x+=s) for (y=-b; y<b; y+=s) col += draw(UV, COLOR, vec2(x,y));
+
+    // col /= A*A;
+    // vec3 col = draw(UV, COLOR);
     ALBEDO.rgb = col;
     // if (cRoad == 0.) {
         //     ALPHA = 0.9;

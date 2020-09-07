@@ -19,6 +19,10 @@ config/name="Synthwave Rider"
 run/main_scene="res://World.tscn"
 config/icon="res://icon.png"
 
+[autoload]
+
+Global="*res://Global.gd"
+
 [rendering]
 
 environment/default_environment="res://default_env.tres"

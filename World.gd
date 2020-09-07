@@ -1,72 +1,63 @@
 extends Spatial
 
-var velocityFlags = Vector3(0,0,0)
-var velocity = Vector3(0,0,0)
-var coords = Vector3(0,0,0)
 var ship
-var maxSpeed = 50
 var camera
 var wind
+var wave
 var back
-var waveYdistortion
+var t = 0
 
 func _ready():
 	ship = $Ship
 	camera = $Camera
 	wind = $StarWind
 	back = $Back
-	pass
+	wave = $Wave
 
-func syncShipPosition():
-	pass
+	Global.waveYdistortion = $Wave.waveYdistortion
+
+	wave.connect("camera_shift", self, "onCameraShift")
+	for bot in $Bots.get_children():
+		bot.velocityFlags.y = 0.3;
+
+func onCameraShift(cameraShift, pos, step):
+	ship.adjustCamera(cameraShift.z, step, 0)
+	for bot in $Bots.get_children():
+		bot.adjustCamera(cameraShift.z, step, 0)
 
 func _process(delta):
-	velocity.y = max(-maxSpeed, min(maxSpeed, velocityFlags.y + velocity.y))
-	velocity.x = velocityFlags.x
+	t += delta;
 
-	if velocity.y > 0:
-		velocity.y = max(0, velocity.y - .2)
-
-	if velocity.y < 0:
-		velocity.y = min(0, velocity.y + .2)
-
-	coords += velocity * delta
-
-	waveYdistortion = $Wave.waveYdistortion
-
-	ship.transform.origin.x = coords.x
-	ship.transform.origin.y = getDistortionY(coords.y, 17, 0.2);
-	camera.transform.origin.y = getDistortionY(coords.y, 21, 2.5);
-	back.transform.origin.y = getDistortionY(coords.y, 21, 8);
+	camera.transform.origin.y = Global.getDistortionY(ship.coords.y, 21, 2.5);
+	back.transform.origin.y = Global.getDistortionY(ship.coords.y, 21, 8);
 	wind.transform.origin.y = camera.transform.origin.y + 9.5;
 
-	var l = 0.25
-	var ta = (getDistortionY(coords.y + l, 17, 0.2) - ship.transform.origin.y) / l;
-	ship.rotation = Vector3(atan(ta), -0.1 * sign(velocity.x), 0)
-	back.setShipVelocity(velocity)
-	back.setShipPosition(coords)
+	back.setShipVelocity(ship.velocity)
+	back.setShipPosition(ship.coords)
 
-func getDistortionY(pos, shift, extra):
-	return sin((shift - pos) / waveYdistortion) +extra
 
 func getCoords():
-	return coords
+	return ship.coords
 
 
 func _input(event):
 	if event.is_action_pressed("ui_left"):
-		velocityFlags.x = -1
+		ship.velocityFlags.x = -1
 	if event.is_action_pressed("ui_right"):
-		velocityFlags.x = 1
+		ship.velocityFlags.x = 1
 	if event.is_action_pressed("ui_up"):
-		velocityFlags.y = 1
+		ship.velocityFlags.y = 1
 	if event.is_action_pressed("ui_down"):
-		velocityFlags.y -= 1
+		ship.velocityFlags.y -= 1
 	if event.is_action_released("ui_left"):
-		velocityFlags.x = 0
+		ship.velocityFlags.x = 0
 	if event.is_action_released("ui_right"):
-		velocityFlags.x = 0
+		ship.velocityFlags.x = 0
 	if event.is_action_released("ui_up"):
-		velocityFlags.y = 0
+		ship.velocityFlags.y = 0
 	if event.is_action_released("ui_down"):
-		velocityFlags.y = 0
+		ship.velocityFlags.y = 0
+	if event.is_action_pressed("ui_accept"):
+		ship.velocityFlags.z = 1
+	if event.is_action_released("ui_accept"):
+		ship.velocityFlags.z = 0

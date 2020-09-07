@@ -1,7 +1,7 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://Camera.gd" type="Script" id=1]
-[ext_resource path="res://ship.gd" type="Script" id=2]
+[ext_resource path="res://components/ship/Ship.tscn" type="PackedScene" id=2]
 [ext_resource path="res://World.gd" type="Script" id=3]
 [ext_resource path="res://WorldEnv.tres" type="Environment" id=4]
 [ext_resource path="res://components/wave/Wave.tscn" type="PackedScene" id=5]
@@ -20,10 +20,6 @@ tangential_accel_random = 0.67
 [sub_resource type="CubeMesh" id=2]
 size = Vector3( 0.2, 0.6, 0.2 )
 
-[sub_resource type="CubeMesh" id=3]
-
-[sub_resource type="SpatialMaterial" id=4]
-
 [node name="Spatial" type="Spatial"]
 script = ExtResource( 3 )
 
@@ -31,9 +27,6 @@ script = ExtResource( 3 )
 
 [node name="Light" type="DirectionalLight" parent="."]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 0, 0 )
-
-[node name="Camera2" type="Camera" parent="."]
-transform = Transform( 0.173648, 0.0566895, 0.983175, 0, 0.998342, -0.057564, -0.984808, 0.00999589, 0.17336, 4.34907, 1.86109, 17.8197 )
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 22 )
@@ -49,15 +42,17 @@ script = ExtResource( 1 )
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0, 12, -14 )
 amount = 120
 lifetime = 3.0
-visible = true
 speed_scale = 2.0
 process_material = SubResource( 1 )
 draw_pass_1 = SubResource( 2 )
 
-[node name="Ship" type="MeshInstance" parent="."]
+[node name="Ship" parent="." instance=ExtResource( 2 )]
 transform = Transform( 0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.5, 0, 0.2, 17 )
-mesh = SubResource( 3 )
-material/0 = SubResource( 4 )
-script = ExtResource( 2 )
+position = 17
 
-[node name="Scene" type="Spatial" parent="."]
+[node name="Bots" type="Spatial" parent="."]
+
+[node name="Ship2" parent="Bots" instance=ExtResource( 2 )]
+transform = Transform( 0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.5, 1, 0.2, 5 )
+position = 15
+id = 1
