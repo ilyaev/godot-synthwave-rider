@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://Camera.gd" type="Script" id=1]
 [ext_resource path="res://components/ship/Ship.tscn" type="PackedScene" id=2]
@@ -6,6 +6,7 @@
 [ext_resource path="res://WorldEnv.tres" type="Environment" id=4]
 [ext_resource path="res://components/wave/Wave.tscn" type="PackedScene" id=5]
 [ext_resource path="res://components/back/Back.tscn" type="PackedScene" id=6]
+[ext_resource path="res://Bots.gd" type="Script" id=7]
 
 [sub_resource type="ParticlesMaterial" id=1]
 emission_shape = 2
@@ -37,6 +38,7 @@ far = 89.0
 script = ExtResource( 1 )
 
 [node name="Back" parent="." instance=ExtResource( 6 )]
+visible = true
 
 [node name="StarWind" type="Particles" parent="."]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0, 12, -14 )
@@ -51,8 +53,4 @@ transform = Transform( 0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.5, 0, 0.2, 17 )
 position = 17
 
 [node name="Bots" type="Spatial" parent="."]
-
-[node name="Ship2" parent="Bots" instance=ExtResource( 2 )]
-transform = Transform( 0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.5, 1, 0.2, 5 )
-position = 15
-id = 1
+script = ExtResource( 7 )

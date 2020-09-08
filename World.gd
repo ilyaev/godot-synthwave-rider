@@ -17,13 +17,14 @@ func _ready():
 	Global.waveYdistortion = $Wave.waveYdistortion
 
 	wave.connect("camera_shift", self, "onCameraShift")
-	for bot in $Bots.get_children():
-		bot.velocityFlags.y = 0.3;
+
+	$Bots.setup();
 
 func onCameraShift(cameraShift, pos, step):
 	ship.adjustCamera(cameraShift.z, step, 0)
-	for bot in $Bots.get_children():
-		bot.adjustCamera(cameraShift.z, step, 0)
+	$Bots.transform.origin.z = 0 + pos - cameraShift.z;
+	$Bots.camera = camera;
+	$Bots.ship = ship;
 
 func _process(delta):
 	t += delta;

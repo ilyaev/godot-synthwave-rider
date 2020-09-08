@@ -9,7 +9,8 @@ var coords = Vector3(0,0,0)
 var gForce = -1;
 var jForce = 2;
 var sheepVerticalPosition = 0;
-var maxSpeed = 50
+var maxSpeed = 50;
+var t = 0;
 
 func _ready():
 	transform.origin.z = position;
@@ -18,6 +19,7 @@ func adjustCamera(shift, step, globalShift):
 	transform.origin.z = position - shift + globalShift;
 
 func _process(delta):
+	t += delta;
 	velocity.y = max(-maxSpeed, min(maxSpeed, velocityFlags.y + velocity.y))
 	velocity.x = velocityFlags.x
 
@@ -38,7 +40,10 @@ func _process(delta):
 
 	coords += velocity * delta
 
-	print(id,': ',coords)
+	if id != 0:
+		coords.x = abs(sin(t + id)*1.6) + .3;
+		if velocityFlags.y < 0:
+			coords.x *= -1;
 
 	transform.origin.x = coords.x
 	transform.origin.y = Global.getDistortionY(coords.y, position, 0.2);
