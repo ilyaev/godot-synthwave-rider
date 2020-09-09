@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://Camera.gd" type="Script" id=1]
 [ext_resource path="res://components/ship/Ship.tscn" type="PackedScene" id=2]
@@ -7,6 +7,8 @@
 [ext_resource path="res://components/wave/Wave.tscn" type="PackedScene" id=5]
 [ext_resource path="res://components/back/Back.tscn" type="PackedScene" id=6]
 [ext_resource path="res://Bots.gd" type="Script" id=7]
+
+[sub_resource type="CapsuleMesh" id=3]
 
 [sub_resource type="ParticlesMaterial" id=1]
 emission_shape = 2
@@ -25,9 +27,17 @@ size = Vector3( 0.2, 0.6, 0.2 )
 script = ExtResource( 3 )
 
 [node name="Wave" parent="." instance=ExtResource( 5 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.526285, 0.00407314, 5.33513 )
 
 [node name="Light" type="DirectionalLight" parent="."]
-transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 0, 0 )
+transform = Transform( 1, 0, 0, 0, 0.707107, -0.707107, 0, 0.707107, 0.707107, 0, 10, 0 )
+light_specular = 0.51
+shadow_color = Color( 0, 1, 0.368627, 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Light"]
+visible = false
+mesh = SubResource( 3 )
+material/0 = null
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 22 )
@@ -38,7 +48,6 @@ far = 89.0
 script = ExtResource( 1 )
 
 [node name="Back" parent="." instance=ExtResource( 6 )]
-visible = true
 
 [node name="StarWind" type="Particles" parent="."]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0, 12, -14 )

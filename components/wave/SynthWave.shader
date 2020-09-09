@@ -1,5 +1,7 @@
 shader_type spatial;
-render_mode unshaded;
+// render_mode unshaded;
+
+const bool CALCULATE_NORMALS = true;
 
 uniform float pos : hint_range(0, 100);
 uniform vec2 size;
@@ -54,44 +56,46 @@ float fbm(vec2 n, int q) {
     return total;
 }
 
-void vertex() {
-    float t = pos * ((size - vec2(1., 1.))/size).y;
+float getHeight(vec3 p, float t, float time, vec2 uv) {
     float h = 0.0;
-
-    // h += 1.7 * sin(VERTEX.z - t) + fract((VERTEX.z - t) / 12.);
-    // h += cos(VERTEX.x / 6. + (size.x / 2.)) * sin((VERTEX.z - t) / 3.);
-
-
-    // maxH *= sin(TIME/2. + VERTEX.x*13.);
-
-    // h += max(0., texture(noise, (UV + vec2(.3, t))).r * maxH - (maxH * .55));
-    // h += max(0., texture(noise_major, (UV + vec2(0, t))).r * maxH - (maxH * .58));
-
-    // h += Noise((UV - vec2(1.3, pos/size.y)) * mountain_sharpness, 4) * maxH - (maxH * mountain_density);
-    // h += (fbm((UV - vec2(1.3, pos/size.y)) * mountain_sharpness, 3) * maxH - (maxH * mountain_density));
-
-    float n = N21(vec2(VERTEX.x, VERTEX.x));
+    float n = N21(vec2(p.x, p.x));
     float morphSpeed = 16.;
-    float tScaled = (TIME + (VERTEX.z - t) + n)/morphSpeed;
+    float tScaled = (time + (p.z - t) + n)/morphSpeed;
 
     float hId = floor(tScaled);
-
     float maxH = mountain_height;
 
-    float mHeight = (fbm((UV - vec2(1.3 + hId, pos/size.y)) * mountain_sharpness, 3) * maxH - (maxH * mountain_density));
-    float mHeightNext = (fbm((UV - vec2(1.3 + hId + 1., pos/size.y)) * mountain_sharpness, 3) * maxH - (maxH * mountain_density));
+    float mHeight = (fbm((uv - vec2(1.3 + hId, pos/size.y)) * mountain_sharpness, 3) * maxH - (maxH * mountain_density));
+    float mHeightNext = (fbm((uv - vec2(1.3 + hId + 1., pos/size.y)) * mountain_sharpness, 3) * maxH - (maxH * mountain_density));
 
 
     h += mix(mHeight, mHeightNext, fract(tScaled));
 
     if (mountain_base) {
-        h = max(0, h) + (fbm((UV - vec2(1.3, pos/size.y)) * 1., 2) * 600. - (maxH * mountain_density));
+        h = max(0, h) + (fbm((uv - vec2(1.3, pos/size.y)) * 1., 2) * 600. - (maxH * mountain_density));
     }
-    // h = fbm((UV - vec2(1.3, pos/size.y)) * mountain_sharpness) * maxH - (maxH * mountain_density);
 
-    h *= texture(road, UV).r;
+    h *= texture(road, uv).r;
+    return max(0., h);
+}
 
-    VERTEX.y += max(h, 0.);
+void vertex() {
+    float t = pos * ((size - vec2(1., 1.))/size).y;
+
+    float h = getHeight(VERTEX, t, TIME, UV);
+
+    if (CALCULATE_NORMALS) {
+        float h1 = getHeight(VERTEX + vec3(1., 0., 1.), t, TIME, UV);
+        float h2 = getHeight(VERTEX + vec3(1., 0., 0.), t, TIME, UV);
+
+        vec3 o = vec3(0., h, 0.);
+        vec3 o1 = vec3(1., h1, 1.);
+        vec3 o2 = vec3(1., h2, 0.);
+
+        NORMAL = (CAMERA_MATRIX * vec4(cross(o1-o, o2-o), 0.0)).xyz;
+    }
+
+    VERTEX.y += h;
 
     vec2 distortion = vec2(0.);
 
@@ -104,6 +108,8 @@ void vertex() {
     }
 
     VERTEX.xy += distortion;
+
+
 
     COLOR.r = h;
 }
@@ -143,6 +149,7 @@ vec3 draw(vec2 gUV, vec4 gCOLOR, vec2 uvShift) {
 
     col *= cRoad;
     col += (1. - cRoad) *  step(.01, sin((gUV.y - shift) * 60.)) * (1. - cDelimeter) * road_color.rgb;
+
     return col;
 }
 
@@ -150,22 +157,7 @@ void fragment() {
     vec3 col = vec3(0.);
 
     col = draw(UV, COLOR, vec2(0.));
+    // col = NORMAL.xyz;
 
-    // float A = 4.;  // Change A to define the level of anti-aliasing (1 to 16) ... higher numbers are REALLY slow!
-    // float s = 1./A;
-    // float x;
-    // float y;
-
-    // float b =  .25;//1. * abs(sin(TIME));
-
-    // for (x=-b; x<b; x+=s) for (y=-b; y<b; y+=s) col += draw(UV, COLOR, vec2(x,y));
-
-    // col /= A*A;
-    // vec3 col = draw(UV, COLOR);
     ALBEDO.rgb = col;
-    // if (cRoad == 0.) {
-        //     ALPHA = 0.9;
-        //     } else {
-        //     ALPHA = 1.;
-    // }
 }

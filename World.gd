@@ -29,6 +29,14 @@ func onCameraShift(cameraShift, pos, step):
 func _process(delta):
 	t += delta;
 
+	# camera.environment.background_sky.sun_longitude = sin(t/10)*50;
+	# camera.environment.background_sky.sun_latitude = cos(t/10)*50;
+
+	$Light.transform.origin.y = 10; #sin(t*2)*20;
+	# $Light.rotate_x(delta);
+	# $Light.rotate_y(delta);
+	# $Light.rotate_z(delta*4);
+
 	camera.transform.origin.y = Global.getDistortionY(ship.coords.y, 21, 2.5);
 	back.transform.origin.y = Global.getDistortionY(ship.coords.y, 21, 8);
 	wind.transform.origin.y = camera.transform.origin.y + 9.5;
