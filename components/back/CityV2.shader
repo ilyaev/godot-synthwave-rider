@@ -139,11 +139,17 @@ mat4 getCubes(vec3 p) {
     q1.z += mix((n - .5) * .5, (n1 - .5) * .5, elapsed);
     q1.z += mix(sin(tScaled/3.+n*13.)*n*.2, sin(tScaled/3.+n1*13.)*n1*.2, elapsed);
 
+
+
+    //TODO: Performance issue
     float rotSpeed = mix(300.*(n - .5), 300.* (n1 - .5), elapsed);
     float yOffset = id.y*sin(id.y)*mix(max(0., n - .88)*rotSpeed,max(0., n1 - .88)*rotSpeed, elapsed);
     yOffset *= veloRate;
-
     q1.xz *= rot2d(mix(yOffset + fract(n*322.33) + sin(tScaled+n*PI)*n*3., yOffset + fract(n1*322.33) + sin(tScaled+n1*PI)*n1*3., elapsed));
+
+
+    // q1.xz *= rot2d(fract(n*322.33)*PI);
+
 
     float bw = .1 * min(1., mix(fract(n*123.33) + .4, fract(n1*123.33) + .4, elapsed));
     float bh = mix(getBuildingHeight(id, n), getBuildingHeight(id, n1), elapsed);
@@ -154,6 +160,8 @@ mat4 getCubes(vec3 p) {
 
     q1.y -= bh - id.z/2.;
     float bw2 = bw*mix(max(.5, n), max(.5,n1), elapsed);
+
+
     return mat4(vec4(sdBox(q1, vec3(bw, bh, bw2)), q1) * RAYMARCH_STEP, vec4(bw,bh,bw2,0.), vec4(0.), vec4(0.));
 }
 
@@ -162,6 +170,8 @@ float getSky(vec3 p) {
 }
 
 mat3 getDist(vec3 p) {
+    // p.x += sin(p.y +t*2.)*(.5*abs(cos(p.x)));
+    // p.yz += cos(p.x/2. +t*4.)*.5;
     float material = 0.;
     mat4 cubesm = getCubes(p - vec3(shipShift/5. * smoothstep(0., MAX_SPEED, velocity), 0., 0.))*.4;
     vec4 cubes = cubesm[0];
@@ -182,8 +192,8 @@ mat4 trace(vec3 ro, vec3 rd) {
 
     vec3 dist;
     mat3 dMat;
-
-    for(int i = 0 ; i < MAX_STEPS ; i++) {
+    int i = 0;
+    for(i = 0 ; i < MAX_STEPS ; i++) {
         p = ro + rd * dt;
         dMat = getDist(p);
         dist = dMat[0];
@@ -193,7 +203,7 @@ mat4 trace(vec3 ro, vec3 rd) {
         }
     }
 
-    return mat4(vec4(dist.x, dt, dist.xy), vec4(dMat[1], 0.), vec4(dMat[2], 0.), vec4(0.));
+    return mat4(vec4(dist.x, dt, dist.xy), vec4(dMat[1], float(i)), vec4(dMat[2], 0.), vec4(0.));
 }
 
 vec3 getNormal(vec3 p) {
@@ -329,6 +339,7 @@ vec3 getAlbedoByMaterial(float material, vec3 p, vec3 normal, mat4 trm) {
         // vec3 uv = getCubeUV(p, normal, trm[2].xyz);
         // vec3 textureColor = getBuildingTexture(uv.yx, normal, trm[2].xyz);
         albedo = backLitColor;
+        // return vec3(trm[1].a/float(MAX_STEPS)) * backLitColor;
     }
     return albedo;
 }

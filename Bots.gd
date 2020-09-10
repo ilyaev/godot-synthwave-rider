@@ -21,19 +21,22 @@ func setup():
 	for id in range(MAX_BOTS):
 		var bot = shipScene.instance()
 		var n = noise.get_noise_1d(id*10 + 1)
-		bot.maxSpeed = rand_range(10,50);
-		bot.velocityFlags.y = n*1.5 + .3*sign(n);
+		bot.maxSpeed = rand_range(3, 5) / 10;
+		# bot.velocityFlags.y = n*1.5 + .3*sign(n);
+		bot.velocity.y = n*1.5 + .3*sign(n);
 		bot.id = id + 1
-		bot.position = id/1.5;
-		if bot.velocityFlags.y < 0:
-			bot.position -= 20;
+		bot.roadShift = id/1.5;
+		if bot.velocity.y < 0:
+			bot.roadShift -= 20;
 		# bot.get_surface_material(0).set_shader_param("color", Vector3(n*3, sin(n + id), cos(n)));
 		add_child(bot)
 
 func _process(delta):
 	t += delta
+	var cameraOffset = ship.position.y;
+
 	for bot in get_children():
-		var dif = abs(bot.coords.y - ship.coords.y)
+		var dif = abs(bot.position.y - cameraOffset)
 
 		if dif > 30:
 			bot.visible = false;
@@ -41,12 +44,12 @@ func _process(delta):
 			bot.visible = true;
 
 		if dif > 100:
-			bot.maxSpeed = rand_range(10,50);
+			bot.maxSpeed = rand_range(5,8) / 10;
 
-			if bot.coords.y > ship.coords.y:
-				bot.coords.y = ship.coords.y - 5;
+			if bot.position.y > cameraOffset:
+				bot.position.y = cameraOffset - 5;
 			else:
-				bot.coords.y = ship.coords.y + 40;
+				bot.position.y = cameraOffset + 40;
 
 			bot.visible = false;
 			# bot.velocity.y *= 0.5;

@@ -37,36 +37,46 @@ func _process(delta):
 	# $Light.rotate_y(delta);
 	# $Light.rotate_z(delta*4);
 
-	camera.transform.origin.y = Global.getDistortionY(ship.coords.y, 21, 2.5);
-	back.transform.origin.y = Global.getDistortionY(ship.coords.y, 21, 8);
+	camera.transform.origin.y = Global.getDistortionY(ship.position.y, 21, 2.5);
+	back.transform.origin.y = Global.getDistortionY(ship.position.y, 21, 8);
 	wind.transform.origin.y = camera.transform.origin.y + 9.5;
 
-	back.setShipVelocity(ship.velocity)
-	back.setShipPosition(ship.coords)
+	back.setShipVelocity(ship.speed * 50)
+	back.setShipPosition(ship.position)
 
 
 func getCoords():
-	return ship.coords
+	return ship.position
 
 
 func _input(event):
 	if event.is_action_pressed("ui_left"):
-		ship.velocityFlags.x = -1
+		# ship.velocityFlags.x = -1
+		ship.speed.x = -.02;
 	if event.is_action_pressed("ui_right"):
-		ship.velocityFlags.x = 1
+		# ship.velocityFlags.x = 1
+		ship.speed.x = .02;
 	if event.is_action_pressed("ui_up"):
-		ship.velocityFlags.y = 1
+		# ship.velocityFlags.y = 1
+		ship.velocity.y = .5
 	if event.is_action_pressed("ui_down"):
-		ship.velocityFlags.y -= 1
+		# ship.velocityFlags.y -= 1
+		ship.velocity.y = -.5
 	if event.is_action_released("ui_left"):
-		ship.velocityFlags.x = 0
+		# ship.velocityFlags.x = 0
+		ship.speed.x = 0
 	if event.is_action_released("ui_right"):
-		ship.velocityFlags.x = 0
+		# ship.velocityFlags.x = 0
+		ship.speed.x = 0
 	if event.is_action_released("ui_up"):
-		ship.velocityFlags.y = 0
+		# ship.velocityFlags.y = 0
+		ship.velocity.y = 0
 	if event.is_action_released("ui_down"):
-		ship.velocityFlags.y = 0
-	if event.is_action_pressed("ui_accept"):
-		ship.velocityFlags.z = 1
-	if event.is_action_released("ui_accept"):
-		ship.velocityFlags.z = 0
+		# ship.velocityFlags.y = 0
+		ship.velocity.y = 0
+	# if event.is_action_pressed("ui_accept"):
+	# 	# ship.velocityFlags.z = 1
+	# if event.is_action_released("ui_accept"):
+	# 	# ship.velocityFlags.z = 0
+	if event.is_action_pressed("ui_focus_next"):
+		back.visible = !back.visible

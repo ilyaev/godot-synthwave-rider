@@ -41,7 +41,7 @@ func _ready():
 	step = stepV.y
 
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	var cameraShift = Vector3(0, -sin((pos - 1)/10), fmod(pos, step));
 
 	camera.transform.origin = cameraStart - cameraShift;
