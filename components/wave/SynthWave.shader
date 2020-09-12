@@ -3,6 +3,7 @@ shader_type spatial;
 
 const bool CALCULATE_NORMALS = true;
 
+uniform float major_noise_size = 128.;
 uniform float pos : hint_range(0, 100);
 uniform vec2 size;
 // uniform sampler2D noise;
@@ -101,6 +102,9 @@ void vertex() {
 
     if (waveYdistortion != 0.) {
         distortion.y = sin((VERTEX.z - t) / waveYdistortion);
+        } else {
+        float nd = max(0., texture(noise_major, vec2((VERTEX.z - t)/major_noise_size, .5)).r * 4. - .5);
+        distortion.y += nd*4.;
     }
 
     if (waveXdistortion != 0.) {
@@ -120,7 +124,7 @@ float sdBox( in vec2 p, in vec2 b )
     return length(max(d,0.0)) + min(max(d.x,d.y),0.0);
 }
 
-vec3 draw(vec2 gUV, vec4 gCOLOR, vec2 uvShift) {
+vec3 draw(vec2 gUV, vec4 gCOLOR, vec2 uvShift, vec3 vert) {
     vec2 uv = fract(gUV * size) + .5 + uvShift;
     // vec2 id = floor(gUV * size);
     vec3 col = vec3(0.,0.,0.);
@@ -147,6 +151,11 @@ vec3 draw(vec2 gUV, vec4 gCOLOR, vec2 uvShift) {
     float cRoad = step(.5408, gUV.x) + step(gUV.x, .4593);
     float cDelimeter = (step(.502, x) + step(x, .498));
 
+    // vec3 rc = road_color.rgb;
+    // float rh = max(0., texture(noise_major, vec2((vert.z - t)/major_noise_size, .5)).r * 4. - .5);
+    // rc = vec3(rh - 1.3);
+    // return rc;
+
     col *= cRoad;
     col += (1. - cRoad) *  step(.01, sin((gUV.y - shift) * 60.)) * (1. - cDelimeter) * road_color.rgb;
 
@@ -156,7 +165,7 @@ vec3 draw(vec2 gUV, vec4 gCOLOR, vec2 uvShift) {
 void fragment() {
     vec3 col = vec3(0.);
 
-    col = draw(UV, COLOR, vec2(0.));
+    col = draw(UV, COLOR, vec2(0.), VERTEX);
     // col = NORMAL.xyz;
 
     ALBEDO.rgb = col;

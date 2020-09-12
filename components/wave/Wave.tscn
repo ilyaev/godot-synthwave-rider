@@ -9,11 +9,11 @@ subdivide_width = 60
 subdivide_depth = 40
 
 [sub_resource type="OpenSimplexNoise" id=2]
-seed = 17
-octaves = 4
-period = 71.3
-persistence = 0.776
-lacunarity = 2.03
+seed = 30
+octaves = 2
+period = 23.1
+persistence = 0.118
+lacunarity = 0.95
 
 [sub_resource type="NoiseTexture" id=3]
 width = 128
@@ -29,7 +29,8 @@ curve = SubResource( 4 )
 
 [sub_resource type="ShaderMaterial" id=6]
 shader = ExtResource( 1 )
-shader_param/pos = 46.237
+shader_param/major_noise_size = 128.0
+shader_param/pos = 1.075
 shader_param/size = Vector2( 61, 41 )
 shader_param/grid_color = Color( 0.329412, 0.784314, 0.752941, 1 )
 shader_param/grid_width = 0.5
@@ -40,7 +41,7 @@ shader_param/road_color = Color( 0.94902, 0.803922, 0.333333, 1 )
 shader_param/waveYdistortion = 0.0
 shader_param/waveXdistortion = 0.0
 shader_param/mountain_sharpness = 6.322
-shader_param/mountain_height = 478.387
+shader_param/mountain_height = 600.0
 shader_param/mountain_density = 0.001
 shader_param/mountain_seed = Vector3( 223.32, 5677, 4331.24 )
 shader_param/mountain_base = false
