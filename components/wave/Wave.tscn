@@ -10,10 +10,10 @@ subdivide_depth = 40
 
 [sub_resource type="OpenSimplexNoise" id=2]
 seed = 30
-octaves = 2
-period = 23.1
-persistence = 0.118
-lacunarity = 0.95
+octaves = 1
+period = 45.9
+persistence = 0.517
+lacunarity = 1.67
 
 [sub_resource type="NoiseTexture" id=3]
 width = 128
@@ -22,7 +22,7 @@ seamless = true
 noise = SubResource( 2 )
 
 [sub_resource type="Curve" id=4]
-_data = [ Vector2( 0.350877, 1 ), 0.0, -13.8649, 0, 0, Vector2( 0.459064, 0 ), 0.0, 0.0, 0, 0, Vector2( 0.546784, 0 ), -0.035826, -0.035826, 0, 0, Vector2( 0.672515, 0.986487 ), 13.6723, 0.0, 0, 0 ]
+_data = [ Vector2( 0.350877, 1 ), 0.0, -13.8649, 0, 0, Vector2( 0.459064, 0 ), 0.0, 0.0, 0, 0, Vector2( 0.540936, 0 ), -0.035826, -0.035826, 0, 0, Vector2( 0.672515, 0.986487 ), 13.6723, 0.0, 0, 0 ]
 
 [sub_resource type="CurveTexture" id=5]
 curve = SubResource( 4 )
@@ -38,9 +38,9 @@ shader_param/grid_show = true
 shader_param/base_color = Color( 1, 0.0313726, 0.0313726, 1 )
 shader_param/base_color_show = true
 shader_param/road_color = Color( 0.94902, 0.803922, 0.333333, 1 )
-shader_param/waveYdistortion = 0.0
+shader_param/waveYdistortion = 15.0
 shader_param/waveXdistortion = 0.0
-shader_param/mountain_sharpness = 6.322
+shader_param/mountain_sharpness = 6.32
 shader_param/mountain_height = 600.0
 shader_param/mountain_density = 0.001
 shader_param/mountain_seed = Vector3( 223.32, 5677, 4331.24 )

@@ -57,8 +57,10 @@ func _input(event):
 	if event.is_action_pressed("ui_right"):
 		ship.speed.x = .02;
 	if event.is_action_pressed("ui_up"):
+		# ship.position.y += 0.1;
 		ship.velocity.y = .5
 	if event.is_action_pressed("ui_down"):
+		# ship.position.y -= 0.1;
 		ship.velocity.y = -.5
 	if event.is_action_released("ui_left"):
 		ship.speed.x = 0

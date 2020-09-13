@@ -6,9 +6,10 @@ var waveYdistortion = 15
 var noiseTexture
 var noiseSize
 var noiseY = 64
+var debug = false
+var prev = 0
 
 func setWaveNoise(nt):
-    # var wn = nt.noise
     noiseSize = nt.get_size().x
     noiseY = int(noiseSize / 2)
     noiseTexture = nt.noise.get_seamless_image(noiseSize)
@@ -18,14 +19,14 @@ func getNoiseValue(value):
     var result = fmod(value, noiseSize)
     if result < 0:
         result = noiseSize + result
-    var nd = max(0, noiseTexture.get_pixel(result, noiseY).r * 4 - .5);
-    return nd * 4; #noiseTexture.get_pixel(result, noiseY).r * 4
+    return noiseTexture.get_pixel(int(result), noiseY).r
 
 func getWaveNoise(x, _y):
     var n1 = getNoiseValue(int(x))
-    var n2 = getNoiseValue(int(x + sign(x)))
-    # print(abs(fmod(x, 1)))
-    return n1 + (n2-n1) * abs(fmod(x, 1))
+    var n2 = getNoiseValue(int(x) + sign(x))
+    var f = abs(fmod(x, 1))
+    var n = lerp(n1, n2, f);
+    return n
 
 
 func _ready():
@@ -34,12 +35,29 @@ func _ready():
 
 
 func getDistortionY(pos, shift, extra):
-    if waveYdistortion > 0:
-        return sin((shift - pos) / waveYdistortion) + extra
-    else:
-        return getWaveNoise((shift - pos), noiseY) + extra
-        # return 	(waveNoise.get_noise_2d((shift - pos) + extra, 23.3) + 1) / 2 * 4.0
+    var sinExtra1 = 0;
+    var sinExtra2 = waveYdistortion;
+    var sinExtra3 = 1;
+    var n = 0;
 
-# func getDistortionY(pos, shift, extra):
-#     # return noise.get_pixel((shift - pos) + extra, 23.3).r;
-#     return 	(waveNoise.get_noise_2d((shift - pos) + extra, 23.3) + 1) / 2 * 4.0
+    if waveYdistortion == 0.0:
+        n = getWaveNoise((shift - pos), noiseY);
+        n -= .4;
+        n *= 8.0;
+        n = max(0, n);
+        sinExtra1 = n * 3.14;
+        sinExtra2 = 15;
+        sinExtra3 = n;
+
+    # if debug:
+    #     print([shift, pos, n, sinExtra2])
+
+    var v = (shift - pos);
+
+    var d = sin(v / sinExtra2) * sinExtra3;
+    d += cos(v / (sinExtra2 * 2.0));
+    d -= sin(v / (sinExtra2 * 4.0));
+    # d = abs(d)
+    # d = max(0, d);
+
+    return d + extra;

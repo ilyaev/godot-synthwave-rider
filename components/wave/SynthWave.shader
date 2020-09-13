@@ -25,6 +25,39 @@ uniform bool mountain_base = true;
 
 const mat2 m = mat2(vec2( 1.6,  1.2), vec2(-1.2,  1.6 ));
 
+vec2 getWaveDistortion(vec3 vert, float t) {
+    vec2 distortion = vec2(0.);
+
+    float sinExtra1 = 0.;
+    float sinExtra2 = waveYdistortion;
+    float sinExtra3 = 1.;
+
+    if (waveYdistortion == 0.) {
+        float n = texture(noise_major, vec2((vert.z - t)/major_noise_size, .5)).r;
+        n -= .4;
+        n *= 8.;
+        n = max(0., n);
+        sinExtra1 = n * 3.14;
+        sinExtra2 = 15.;
+        sinExtra3 = n;
+    }
+
+    float v = (vert.z - t);
+
+    float d = sin(v / sinExtra2 ) * sinExtra3;
+    d += cos(v / (sinExtra2 * 2.0));
+    d -= sin(v / (sinExtra2 * 4.0));
+    // d = abs(d);
+    // d = max(0., d);
+
+    distortion.y = d;
+
+    if (waveXdistortion != 0.) {
+        distortion.x = sin((vert.z - t) / waveXdistortion);
+    }
+    return distortion;
+}
+
 float N21(vec2 p) {
     return fract(sin(p.x * 132.33 + p.y*1433.43) * 55332.33);
 }
@@ -98,18 +131,18 @@ void vertex() {
 
     VERTEX.y += h;
 
-    vec2 distortion = vec2(0.);
+    vec2 distortion = getWaveDistortion(VERTEX, t); //vec2(0.);
 
-    if (waveYdistortion != 0.) {
-        distortion.y = sin((VERTEX.z - t) / waveYdistortion);
-        } else {
-        float nd = max(0., texture(noise_major, vec2((VERTEX.z - t)/major_noise_size, .5)).r * 4. - .5);
-        distortion.y += nd*4.;
-    }
+    // if (waveYdistortion != 0.) {
+        //     distortion.y = sin((VERTEX.z - t) / waveYdistortion);
+        //     } else {
+        //     float nd = max(0., texture(noise_major, vec2((VERTEX.z - t)/major_noise_size, .5)).r - 0.3);
+        //     distortion.y += nd*4.;
+    // }
 
-    if (waveXdistortion != 0.) {
-        distortion.x = sin((VERTEX.z - t) / waveXdistortion);
-    }
+    // if (waveXdistortion != 0.) {
+        //     distortion.x = sin((VERTEX.z - t) / waveXdistortion);
+    // }
 
     VERTEX.xy += distortion;
 

@@ -3,7 +3,7 @@ extends MeshInstance
 export var waveYdistortion = 0;
 export var waveXdistortion = 0;
 
-var pos = 0;
+var pos = -100;
 var glPos = 0.0;
 var speed = 8;
 var camera;
