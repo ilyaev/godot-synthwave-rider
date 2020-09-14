@@ -1,11 +1,11 @@
 extends Spatial
 
-export var MAX_BOTS = 50;
+export var MAX_BOTS = 30;
 var camera;
 var ship;
 var noise = OpenSimplexNoise.new()
 var t = 0;
-var AVOID_RADIUS = .5;
+var AVOID_RADIUS = Vector2(0.7, 5.5);
 
 var shipScene = preload("res://components/ship/Ship.tscn")
 
@@ -25,9 +25,10 @@ func setup():
 		var n = noise.get_noise_1d(id*10 + 1)
 
 		bot.maxSpeed = rand_range(3, 5) / 10;
-		bot.velocity.y = n*1.5 + .3*sign(n);
+		bot.velocity.y = abs(n*1.5 + .3*sign(n));
 		bot.id = id + 1
-		bot.roadShift = id/1.5;
+		bot.roadShift = 0;
+		bot.position.y = -id*2;
 
 		bot.position.x = .4 * sign(n) + n*2.3;
 		bot.originalX = bot.position.x;
@@ -37,22 +38,28 @@ func setup():
 
 		add_child(bot)
 
+
+func isBotNear(src, bot):
+	var xd = abs(bot.position.x - src.position.x)
+	var yd = abs((bot.position.y - bot.roadShift) - src.position.y)
+	# print([(bot.position.y - bot.roadShift), src.position.y])
+	if xd < AVOID_RADIUS.x && yd < AVOID_RADIUS.y:
+		return bot;
+	return false
+
 func getAround(rad, src):
 	var result = []
 
 	for bot in get_children():
-		if bot.id != src.id:
-			var xd = abs(bot.position.x - src.position.x)
-			var yd = abs(bot.position.y - src.position.y)
-			if xd < rad && yd < rad:
-				result.append(bot)
+		if bot.id != src.id && isBotNear(src, bot):
+			result.append(bot)
 
 
-	if (abs(ship.position.x - src.position.x) < rad) && (abs(ship.position.y - src.position.y) < rad):
-		# print('APPEND SHIP')
-		result.append(ship)
+	# print([src.position.y, src.roadShift, ship.position.y - ship.roadShift])
+	if isBotNear(src, ship):
+		# print('APPEND!')
+		result.append(ship);
 
-	# print([ship.position.y, src.position.y])
 	return result;
 
 func getAvoidVector(src):
@@ -62,12 +69,29 @@ func getAvoidVector(src):
 	if items.size() == 0:
 		return result;
 
+	var xc = 0;
+	var yc = 0;
 	for bot in items:
-		result.x += src.position.x - bot.position.x
-		result.y += src.position.y - bot.position.y
-	result.x /= items.size();
-	result.y /= items.size();
-	result.x += (src.originalX - src.position.x) * 0.5;
+		var xd = abs(bot.position.x - src.position.x)
+		var yd = abs((bot.position.y - bot.roadShift) - src.position.y)
+		if xd < AVOID_RADIUS.x && yd < AVOID_RADIUS.y:
+			# print('AVOIDXY: ', [src.id, bot.id, xd, yd])
+			result.x += src.position.x - bot.position.x
+			result.y += (src.position.y - bot.position.y) * (1.0 - yd/AVOID_RADIUS.y) * 0.2;
+			yc += 1;
+			xc += 1;
+		# if yd < AVOID_RADIUS.y && xd :
+		# 	result.y += src.position.y - bot.position.y
+		# 	yc += 1;
+
+	if xc > 0:
+		result.x /= xc;
+	if yc > 0:
+		result.y /= yc;
+
+	result.x += (src.originalX - src.position.x) * .1;
+	# result.x += (0 - src.position.x) * 0.02;
+
 	return result
 
 
@@ -79,20 +103,14 @@ func _process(delta):
 		var dif = abs(bot.position.y - cameraOffset)
 
 		var avoidVector = getAvoidVector(bot)
+
 		bot.velocity.x = avoidVector.x * .7;
-		bot.speed.y += avoidVector.y * .15;
+		var speedY = avoidVector.y * (bot.speed.y/bot.maxSpeed) * .01;
+		bot.speed.y += speedY;
+		if bot.speed.y > bot.maxSpeed:
+			bot.maxSpeed += speedY
 		if avoidVector.x == 0:
 			bot.speed.x = max(0, bot.speed.x - 0.01);
-		# else:
-		# 	bot.speed.z = .1;
-		# if avoidVector != 0:
-		# 	print(bot.id, ' - ', avoidVector);
-
-
-		# if dif > 30:
-		# 	bot.visible = false;
-		# else:
-		# 	bot.visible = true;
 
 		if dif > 100 + ship.id/5:
 			bot.maxSpeed = rand_range(5,8) / 10;

@@ -42,9 +42,10 @@ func _physics_process(delta):
 	Global.debug = false
 	# print([position.y, transform.origin.y, transform.origin.y - b])
 
-	var l = 0.01
+	var l = 0.5;
 	var ta = (Global.getDistortionY(position.y + l, roadShift, 0.2) - transform.origin.y) / l;
 	rotation = Vector3(atan(ta), -0.1 * sign(speed.x), 0)
+	transform.origin.y -= atan(ta) * 2;
 
 	position.z = min(5, max(0, position.z))
 	transform.origin.y += position.z
@@ -56,3 +57,5 @@ func _physics_process(delta):
 
 	if id != 0:
 		transform.origin.z = roadShift - position.y
+
+	originalX = sin(t*0.01 + id/10)*.2;
