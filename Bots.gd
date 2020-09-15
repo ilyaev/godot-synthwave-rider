@@ -1,11 +1,15 @@
 extends Spatial
 
-export var MAX_BOTS = 30;
+const QuadTree = preload('res://components/quadtree/quad_tree.gd')
+
+export var MAX_BOTS = 100;
 var camera;
 var ship;
 var noise = OpenSimplexNoise.new()
 var t = 0;
 var AVOID_RADIUS = Vector2(0.7, 5.5);
+var quadTree: QuadTree
+var useQuadTree: bool = true
 
 var shipScene = preload("res://components/ship/Ship.tscn")
 
@@ -15,7 +19,24 @@ func _ready():
 	noise.period = 10.0
 	noise.persistence = 0.8
 	noise.lacunarity = 10.0
-	pass # Replace with function body.
+
+func rebuildQuadTree():
+	quadTree = null
+	var minV = 10000
+	var maxV = -10000
+	for bot in get_children():
+		if bot.position.y < minV:
+			minV = bot.position.y
+		if bot.position.y > maxV:
+			maxV = bot.position.y
+
+	quadTree = QuadTree.new(Rect2(-10, minV, 20, maxV - minV))
+
+	for bot in get_children():
+		quadTree.insert(Vector2(bot.position.x, bot.position.y - bot.roadShift), bot)
+
+	if ship:
+		quadTree.insert(Vector2(ship.position.x, ship.position.y - ship.roadShift), ship)
 
 
 func setup():
@@ -28,7 +49,7 @@ func setup():
 		bot.velocity.y = abs(n*1.5 + .3*sign(n));
 		bot.id = id + 1
 		bot.roadShift = 0;
-		bot.position.y = -id*2;
+		bot.position.y = -id*3;
 
 		bot.position.x = .4 * sign(n) + n*2.3;
 		bot.originalX = bot.position.x;
@@ -37,27 +58,36 @@ func setup():
 			bot.roadShift -= 20;
 
 		add_child(bot)
+	if useQuadTree:
+		rebuildQuadTree()
 
+func getAroundQuadTree(rad, src):
+	var result = []
+
+	result = quadTree.query(Rect2(src.position.x - rad.x, src.position.y - rad.y, rad.x * 2, rad.y * 2))
+	var ownIndex = result.find(src)
+	if ownIndex >= 0:
+		result.remove(ownIndex)
+	return result
 
 func isBotNear(src, bot):
 	var xd = abs(bot.position.x - src.position.x)
 	var yd = abs((bot.position.y - bot.roadShift) - src.position.y)
-	# print([(bot.position.y - bot.roadShift), src.position.y])
 	if xd < AVOID_RADIUS.x && yd < AVOID_RADIUS.y:
 		return bot;
 	return false
 
 func getAround(rad, src):
+	if useQuadTree:
+		return getAroundQuadTree(rad, src)
+
 	var result = []
 
 	for bot in get_children():
 		if bot.id != src.id && isBotNear(src, bot):
 			result.append(bot)
 
-
-	# print([src.position.y, src.roadShift, ship.position.y - ship.roadShift])
 	if isBotNear(src, ship):
-		# print('APPEND!')
 		result.append(ship);
 
 	return result;
@@ -75,22 +105,17 @@ func getAvoidVector(src):
 		var xd = abs(bot.position.x - src.position.x)
 		var yd = abs((bot.position.y - bot.roadShift) - src.position.y)
 		if xd < AVOID_RADIUS.x && yd < AVOID_RADIUS.y:
-			# print('AVOIDXY: ', [src.id, bot.id, xd, yd])
 			result.x += src.position.x - bot.position.x
 			result.y += (src.position.y - bot.position.y) * (1.0 - yd/AVOID_RADIUS.y) * 0.2;
 			yc += 1;
 			xc += 1;
-		# if yd < AVOID_RADIUS.y && xd :
-		# 	result.y += src.position.y - bot.position.y
-		# 	yc += 1;
 
 	if xc > 0:
 		result.x /= xc;
 	if yc > 0:
 		result.y /= yc;
 
-	result.x += (src.originalX - src.position.x) * .1;
-	# result.x += (0 - src.position.x) * 0.02;
+	result.x += (src.originalX - src.position.x) * .2;
 
 	return result
 
@@ -116,13 +141,16 @@ func _process(delta):
 			bot.maxSpeed = rand_range(5,8) / 10;
 
 			if bot.position.y > cameraOffset:
-				bot.position.y = cameraOffset - 25;
+				bot.position.y -= 145; #cameraOffset - (bot.position.y - dif + 75);
 			else:
-				bot.position.y = cameraOffset + 40;
+				bot.position.y += 200; #cameraOffset + 40;
 
 			# bot.visible = false;
 			var n = rand_range(0, 1)*sign(bot.position.x);
 			bot.position.x = .4 * sign(n) + n*1.2;
 			bot.speed.y /= 3;
 			bot.originalX = bot.position.x;
+
+	if useQuadTree:
+		rebuildQuadTree()
 

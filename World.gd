@@ -7,7 +7,22 @@ var wave
 var back
 var t = 0
 
+# const QuadTree = preload('res://components/quadtree/quad_tree.gd')
+
 func _ready():
+	# var qt
+	# for iter in range(10):
+	# 	qt = QuadTree.new(Rect2(0,0,100,100));
+	# 	for i in range(100):
+	# 		var p = Vector2(rand_range(0, 100), rand_range(0, 100))
+	# 		# var p = Vector2(i + 0.1, i + 0.1)
+	# 		# print('---POINT:', p)
+	# 		qt.insert(p)
+	# 	print('QERY: ', qt.query(Rect2(0,0,10,10)).size())
+	# get_tree().quit()
+
+
+
 	ship = $Ship
 	camera = $Camera
 	wind = $StarWind
