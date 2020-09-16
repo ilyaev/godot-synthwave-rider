@@ -43,6 +43,7 @@ func onCameraShift(cameraShift, pos, step):
 
 func _process(delta):
 	t += delta;
+	ship.velocity.y = 0.5;
 
 	# camera.environment.background_sky.sun_longitude = sin(t/10)*50;
 	# camera.environment.background_sky.sun_latitude = cos(t/10)*50;
@@ -73,10 +74,12 @@ func _input(event):
 		ship.speed.x = .02;
 	if event.is_action_pressed("ui_up"):
 		# ship.position.y += 0.1;
-		ship.velocity.y = .5
+		# ship.velocity.y = .5
+		ship.maxSpeed = min(1.0, ship.maxSpeed + 0.1)
 	if event.is_action_pressed("ui_down"):
 		# ship.position.y -= 0.1;
-		ship.velocity.y = -.5
+		# ship.velocity.y = -.5
+		ship.maxSpeed = max(0.0, ship.maxSpeed - 0.1)
 	if event.is_action_released("ui_left"):
 		ship.speed.x = 0
 	if event.is_action_released("ui_right"):

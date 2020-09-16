@@ -15,10 +15,10 @@ void fragment() {
     // frame += step(uv.x, .1) + step(.9, uv.x);
     // frame += step(uv.y, .1) + step(.9, uv.y);
 
-    frame += pow(.1/uv.x, 2.5);
-    frame += pow(.1/(uv.x - 1.), 2.5);
-    frame += pow(.1/uv.y, 2.5);
-    frame += pow(.1/(uv.y - 1.), 2.5);
+    // frame += pow(.1/uv.x, 2.5);
+    // frame += pow(.1/(uv.x - 1.), 2.5);
+    // frame += pow(.1/uv.y, 2.5);
+    // frame += pow(.1/(uv.y - 1.), 2.5);
 
     frame = 1.;
 

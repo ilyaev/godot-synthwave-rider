@@ -2,12 +2,12 @@ extends Spatial
 
 const QuadTree = preload('res://components/quadtree/quad_tree.gd')
 
-export var MAX_BOTS = 100;
+export var MAX_BOTS = 50;
 var camera;
 var ship;
 var noise = OpenSimplexNoise.new()
 var t = 0;
-var AVOID_RADIUS = Vector2(0.7, 5.5);
+var AVOID_RADIUS = Vector2(.7, 5.5);
 var quadTree: QuadTree
 var useQuadTree: bool = true
 
@@ -19,21 +19,30 @@ func _ready():
 	noise.period = 10.0
 	noise.persistence = 0.8
 	noise.lacunarity = 10.0
+	if MAX_BOTS <= 20:
+		useQuadTree = false
 
 func rebuildQuadTree():
 	quadTree = null
 	var minV = 10000
 	var maxV = -10000
+	var added = 0
 	for bot in get_children():
-		if bot.position.y < minV:
-			minV = bot.position.y
-		if bot.position.y > maxV:
-			maxV = bot.position.y
+		if bot.visible:
+			if bot.position.y < minV:
+				minV = bot.position.y
+			if bot.position.y > maxV:
+				maxV = bot.position.y
+
 
 	quadTree = QuadTree.new(Rect2(-10, minV, 20, maxV - minV))
 
 	for bot in get_children():
-		quadTree.insert(Vector2(bot.position.x, bot.position.y - bot.roadShift), bot)
+		if bot.visible:
+			added += 1
+			quadTree.insert(Vector2(bot.position.x, bot.position.y - bot.roadShift), bot)
+
+	# print('QTF:', [added, minV, maxV])
 
 	if ship:
 		quadTree.insert(Vector2(ship.position.x, ship.position.y - ship.roadShift), ship)
@@ -45,21 +54,32 @@ func setup():
 
 		var n = noise.get_noise_1d(id*10 + 1)
 
-		bot.maxSpeed = rand_range(3, 5) / 10;
-		bot.velocity.y = abs(n*1.5 + .3*sign(n));
 		bot.id = id + 1
+		bot.maxSpeed = getNextMaxSpeed(bot)
+		bot.originalMaxSpeed = bot.maxSpeed;
+		bot.velocity.y = abs(n*1.5 + .3*sign(n));
 		bot.roadShift = 0;
 		bot.position.y = -id*3;
+		bot.manevrity = max(.2, (randi()%10) / 20.0)
 
-		bot.position.x = .4 * sign(n) + n*2.3;
+		# bot.position.x = .4 * sign(n) + n*2.3;
+
+		bot.position.x = (randi()%4+1) - 2 - 0.5;
+		bot.position.x += .2 * sign(bot.position.x)
+
 		bot.originalX = bot.position.x;
 
 		if bot.velocity.y < 0:
 			bot.roadShift -= 20;
 
 		add_child(bot)
+
 	if useQuadTree:
 		rebuildQuadTree()
+
+func getNextMaxSpeed(bot):
+	var n = (sin(bot.id/10 + t) * .5) + 0.5 + 0.3
+	return n
 
 func getAroundQuadTree(rad, src):
 	var result = []
@@ -109,48 +129,87 @@ func getAvoidVector(src):
 			result.y += (src.position.y - bot.position.y) * (1.0 - yd/AVOID_RADIUS.y) * 0.2;
 			yc += 1;
 			xc += 1;
+		if xd < 0.25 && yd < 0.5:
+			collide(src, bot, xd, yd)
 
 	if xc > 0:
 		result.x /= xc;
 	if yc > 0:
 		result.y /= yc;
 
-	result.x += (src.originalX - src.position.x) * .2;
+	result.x += (src.originalX - src.position.x) / (xc + 1);
 
 	return result
 
 
-func _process(delta):
+func wrapPosition(bot, cameraOffset):
+	var dif = abs(bot.position.y - cameraOffset)
+	if dif > 100 + ship.id/5:
+		bot.maxSpeed = getNextMaxSpeed(bot);
+		bot.originalMaxSpeed = bot.maxSpeed;
+
+		if bot.position.y > cameraOffset:
+			bot.position.y -= 145;
+		else:
+			bot.position.y += 200;
+		bot.position.x = (randi()%4+1) - 2 - 0.5;
+		bot.position.x += .2 * sign(bot.position.x)
+		bot.originalX = bot.position.x;
+
+		bot.speed.y /= 3;
+
+func flockBehaviour(bot):
+	if !bot.visible:
+		return
+
+	var avoidVector = getAvoidVector(bot)
+
+	bot.velocity.x = avoidVector.x * ship.manevrity;
+
+	var speedY = avoidVector.y * (bot.speed.y/bot.maxSpeed) * .01;
+	bot.speed.y += speedY;
+
+	if bot.speed.y > bot.maxSpeed:
+		bot.maxSpeed = bot.speed.y;
+
+	if avoidVector.y == 0 && bot.maxSpeed > bot.originalMaxSpeed:
+		bot.maxSpeed = max(bot.maxSpeed, bot.maxSpeed + (bot.originalMaxSpeed - bot.maxSpeed) * .2)
+
+	if avoidVector.x == 0:
+		bot.speed.x = max(0, bot.speed.x - 0.01);
+
+func ensureVisibility(bot, cameraOffset):
+	if (bot.position.y - cameraOffset) > 20:
+		bot.visible = false
+	else:
+		bot.visible = true
+
+	if bot.visible && (bot.position.y - cameraOffset) < -35:
+		bot.visible = false
+
+func _physics_process(delta):
+	# var tStart = OS.get_ticks_usec()
 	t += delta
 	var cameraOffset = ship.position.y;
 
 	for bot in get_children():
-		var dif = abs(bot.position.y - cameraOffset)
+		ensureVisibility(bot, cameraOffset)
+		flockBehaviour(bot)
+		wrapPosition(bot, cameraOffset)
 
-		var avoidVector = getAvoidVector(bot)
-
-		bot.velocity.x = avoidVector.x * .7;
-		var speedY = avoidVector.y * (bot.speed.y/bot.maxSpeed) * .01;
-		bot.speed.y += speedY;
-		if bot.speed.y > bot.maxSpeed:
-			bot.maxSpeed += speedY
-		if avoidVector.x == 0:
-			bot.speed.x = max(0, bot.speed.x - 0.01);
-
-		if dif > 100 + ship.id/5:
-			bot.maxSpeed = rand_range(5,8) / 10;
-
-			if bot.position.y > cameraOffset:
-				bot.position.y -= 145; #cameraOffset - (bot.position.y - dif + 75);
-			else:
-				bot.position.y += 200; #cameraOffset + 40;
-
-			# bot.visible = false;
-			var n = rand_range(0, 1)*sign(bot.position.x);
-			bot.position.x = .4 * sign(n) + n*1.2;
-			bot.speed.y /= 3;
-			bot.originalX = bot.position.x;
 
 	if useQuadTree:
 		rebuildQuadTree()
+
+	# var elapsed = OS.get_ticks_usec() - tStart
+	# print(elapsed)
+
+
+func collide(src, target, xd, yd):
+	if src.speed.z > 0 || target.speed.z > 0:
+		return
+	var bot = src
+	if target.speed.y < bot.speed.y:
+		bot = target
+	# bot.speed.z = .1 + (randi()%10)/100.0;
 
