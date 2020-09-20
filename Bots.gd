@@ -2,12 +2,12 @@ extends Spatial
 
 const QuadTree = preload('res://components/quadtree/quad_tree.gd')
 
-export var MAX_BOTS = 50;
+export var MAX_BOTS = 10;
 var camera;
 var ship;
 var noise = OpenSimplexNoise.new()
 var t = 0;
-var AVOID_RADIUS = Vector2(.7, 5.5);
+var AVOID_RADIUS = Vector2(1.2, 6.5);
 var quadTree: QuadTree
 var useQuadTree: bool = true
 
@@ -211,5 +211,5 @@ func collide(src, target, xd, yd):
 	var bot = src
 	if target.speed.y < bot.speed.y:
 		bot = target
-	# bot.speed.z = .1 + (randi()%10)/100.0;
+	bot.speed.z = .3 + (randi()%10)/100.0;
 

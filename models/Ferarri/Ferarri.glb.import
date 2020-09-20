@@ -2,12 +2,12 @@
 
 importer="scene"
 type="PackedScene"
-path="res://.import/Car.glb-a10de6e2bf654de887a32c02de56e270.scn"
+path="res://.import/Ferarri.glb-6422f0b2f812592f370f26ac5f626d19.scn"
 
 [deps]
 
-source_file="res://models/Car.glb"
-dest_files=[ "res://.import/Car.glb-a10de6e2bf654de887a32c02de56e270.scn" ]
+source_file="res://models/Ferarri/Ferarri.glb"
+dest_files=[ "res://.import/Ferarri.glb-6422f0b2f812592f370f26ac5f626d19.scn" ]
 
 [params]
 

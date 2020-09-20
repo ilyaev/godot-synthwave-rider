@@ -103,7 +103,7 @@ float getBuildingNoise(vec3 id, float iTime) {
 
 mat4 getCubes(vec3 p) {
     if (NO_BUILDINGS) {
-        return mat4(vec4(sdBox(p, vec3(.1, .1, .1)), p) * RAYMARCH_STEP, vec4(.1,.1,.1,0.), vec4(0.), vec4(0.));
+        return mat4(vec4(sdBox(p+vec3(1), vec3(.1, .1, .1)), p) * RAYMARCH_STEP, vec4(.1,.1,.1,0.), vec4(0.), vec4(0.));
     }
     float baseSpacing = defaultBaseSize + defaultBaseSpacing/2.;
 

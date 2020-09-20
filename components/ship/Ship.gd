@@ -62,3 +62,4 @@ func _physics_process(delta):
 		transform.origin.z = roadShift - position.y
 
 	originalX = sin(t*0.01 + id/10)*.2;
+	$Ferarri.pos = position.y*.314;
