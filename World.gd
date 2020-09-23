@@ -3,6 +3,7 @@ extends Spatial
 var ship
 var camera
 var wind
+var skyline
 var wave
 var back
 var t = 0
@@ -26,6 +27,7 @@ func _ready():
 	ship = $Ship
 	camera = $Camera
 	wind = $StarWind
+	skyline = $Skyline
 	back = $Back
 	wave = $Wave
 
@@ -55,9 +57,13 @@ func _process(delta):
 
 
 	# camera.transform.origin.y = 10;
-	camera.transform.origin.y = Global.getDistortionY(ship.position.y, 21, 2.5);
-	back.transform.origin.y = Global.getDistortionY(ship.position.y, 21, 8);
+
+	var dY = Global.getDistortionY(ship.position.y, 21, 0);
+
+	camera.transform.origin.y = dY + 2.5;
+	back.transform.origin.y = dY + 8;
 	wind.transform.origin.y = camera.transform.origin.y + 9.5;
+	skyline.transform.origin.y = dY - 7;
 
 	back.setShipVelocity(ship.speed * 50)
 	back.setShipPosition(ship.position)

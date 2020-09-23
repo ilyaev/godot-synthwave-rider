@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://components/ship/Ship.gd" type="Script" id=1]
+[ext_resource path="res://components/ship/Ferarri.gd" type="Script" id=3]
 [ext_resource path="res://components/ship/Ferarri.tscn" type="PackedScene" id=4]
 
 [node name="Ship" type="MeshInstance"]
@@ -10,3 +11,4 @@ roadShift = 17
 
 [node name="Ferarri" parent="." instance=ExtResource( 4 )]
 transform = Transform( 1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0, 0 )
+script = ExtResource( 3 )

@@ -2,12 +2,12 @@ extends Spatial
 
 const QuadTree = preload('res://components/quadtree/quad_tree.gd')
 
-export var MAX_BOTS = 10;
+export var MAX_BOTS = 0;
 var camera;
 var ship;
 var noise = OpenSimplexNoise.new()
 var t = 0;
-var AVOID_RADIUS = Vector2(1.2, 6.5);
+var AVOID_RADIUS = Vector2(1.2, 7.5);
 var quadTree: QuadTree
 var useQuadTree: bool = true
 
@@ -48,6 +48,13 @@ func rebuildQuadTree():
 		quadTree.insert(Vector2(ship.position.x, ship.position.y - ship.roadShift), ship)
 
 
+func getBotPositionX(_i):
+	var res = Vector3(0,0,0)
+	res.x = (randi()%2 + 1) - 1
+	if res.x == 0:
+		res.x = -1
+	return res.x
+
 func setup():
 	for id in range(MAX_BOTS):
 		var bot = shipScene.instance()
@@ -59,14 +66,10 @@ func setup():
 		bot.originalMaxSpeed = bot.maxSpeed;
 		bot.velocity.y = abs(n*1.5 + .3*sign(n));
 		bot.roadShift = 0;
-		bot.position.y = -id*3;
+		bot.position.y = -id*7;
 		bot.manevrity = max(.2, (randi()%10) / 20.0)
 
-		# bot.position.x = .4 * sign(n) + n*2.3;
-
-		bot.position.x = (randi()%4+1) - 2 - 0.5;
-		bot.position.x += .2 * sign(bot.position.x)
-
+		bot.position.x = getBotPositionX(bot.id)
 		bot.originalX = bot.position.x;
 
 		if bot.velocity.y < 0:
@@ -152,8 +155,8 @@ func wrapPosition(bot, cameraOffset):
 			bot.position.y -= 145;
 		else:
 			bot.position.y += 200;
-		bot.position.x = (randi()%4+1) - 2 - 0.5;
-		bot.position.x += .2 * sign(bot.position.x)
+
+		bot.position.x = getBotPositionX(bot.id)
 		bot.originalX = bot.position.x;
 
 		bot.speed.y /= 3;
@@ -176,7 +179,7 @@ func flockBehaviour(bot):
 		bot.maxSpeed = max(bot.maxSpeed, bot.maxSpeed + (bot.originalMaxSpeed - bot.maxSpeed) * .2)
 
 	if avoidVector.x == 0:
-		bot.speed.x = max(0, bot.speed.x - 0.01);
+		bot.speed.x = max(0, bot.speed.x - 0.02*sign(bot.speed.x));
 
 func ensureVisibility(bot, cameraOffset):
 	if (bot.position.y - cameraOffset) > 20:
@@ -205,11 +208,11 @@ func _physics_process(delta):
 	# print(elapsed)
 
 
-func collide(src, target, xd, yd):
+func collide(src, target, _xd, _yd):
 	if src.speed.z > 0 || target.speed.z > 0:
 		return
 	var bot = src
 	if target.speed.y < bot.speed.y:
 		bot = target
-	bot.speed.z = .3 + (randi()%10)/100.0;
+	# bot.speed.z = .3 + (randi()%10)/100.0;
 

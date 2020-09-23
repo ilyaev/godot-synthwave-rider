@@ -1,0 +1,30 @@
+[gd_scene load_steps=9 format=2]
+
+[ext_resource path="res://components/skyline/skyline.shader" type="Shader" id=1]
+[ext_resource path="res://components/skyline/building.shader" type="Shader" id=2]
+[ext_resource path="res://components/skyline/Skyline.gd" type="Script" id=3]
+
+[sub_resource type="OpenSimplexNoise" id=1]
+
+[sub_resource type="NoiseTexture" id=2]
+seamless = true
+noise = SubResource( 1 )
+
+[sub_resource type="ShaderMaterial" id=3]
+shader = ExtResource( 1 )
+shader_param/size = 15.0
+shader_param/noise = SubResource( 2 )
+
+[sub_resource type="ShaderMaterial" id=4]
+shader = ExtResource( 2 )
+
+[sub_resource type="CubeMesh" id=5]
+material = SubResource( 4 )
+size = Vector3( 1, 1, 1 )
+
+[node name="Skyline" type="Particles"]
+amount = 20
+lifetime = 0.01
+process_material = SubResource( 3 )
+draw_pass_1 = SubResource( 5 )
+script = ExtResource( 3 )
