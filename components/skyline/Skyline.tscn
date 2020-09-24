@@ -24,7 +24,9 @@ size = Vector3( 1, 1, 1 )
 
 [node name="Skyline" type="Particles"]
 amount = 20
-lifetime = 0.01
+lifetime = 600.0
+speed_scale = 64.0
+explosiveness = 1.0
 process_material = SubResource( 3 )
 draw_pass_1 = SubResource( 5 )
 script = ExtResource( 3 )

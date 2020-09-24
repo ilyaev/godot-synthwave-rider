@@ -1,10 +1,10 @@
 [gd_scene load_steps=7 format=2]
 
-[ext_resource path="res://components/back/CityV2.shader" type="Shader" id=1]
+[ext_resource path="res://components/back/HexDome.shader" type="Shader" id=1]
 [ext_resource path="res://components/back/Back.gd" type="Script" id=2]
 
 [sub_resource type="PlaneMesh" id=1]
-size = Vector2( 110, 110 )
+size = Vector2( 300, 300 )
 
 [sub_resource type="OpenSimplexNoise" id=2]
 seed = 5

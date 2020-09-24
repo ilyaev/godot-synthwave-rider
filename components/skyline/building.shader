@@ -9,11 +9,7 @@ void vertex() {
     vec4 invcamz = INV_CAMERA_MATRIX[2];
     vec4 invcamw = INV_CAMERA_MATRIX[3];
 
-    mat3 invcam = mat3(invcamx.xyz, invcamy.xyz, invcamz.xyz);
-
-    world_normal = NORMAL;// * invcam;
-    // VERTEX.x += sin(TIME)*2.;
-    // NORMAL.xyz = (CAMERA_MATRIX * vec4(NORMAL, 0.)).xyz;
+    world_normal = NORMAL;
 }
 
 void fragment() {
@@ -21,8 +17,6 @@ void fragment() {
 
     vec2 id = COLOR.rg;
     float h = COLOR.b;
-
-
 
     vec3 col = vec3(0.);
 
@@ -36,7 +30,7 @@ void fragment() {
         uv.y *= h;
         frame = max(frame, (1. - min(step(0.05, uv.x), (1. - step(h/1.05, uv.y)))));
         if (frame == 0.) {
-            col = vec3(sin(bid.x + bid.y*2. + TIME*3.));//, cos(bid.x/2. + bid.y*2. + TIME/2.), sin(bid.x*2. + bid.y/2. + TIME*2.));
+            col = vec3(sin(bid.x + bid.y*2. + TIME*3.));
             } else {
             col = frame * vec3(1.);
         }

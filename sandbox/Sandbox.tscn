@@ -1,8 +1,15 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://components/wave/Wave.tscn" type="PackedScene" id=1]
+[ext_resource path="res://sandbox/particles.shader" type="Shader" id=2]
 
 [sub_resource type="Environment" id=1]
+
+[sub_resource type="ShaderMaterial" id=2]
+shader = ExtResource( 2 )
+shader_param/size = null
+
+[sub_resource type="CubeMesh" id=3]
 
 [node name="Sandbox" type="Spatial"]
 
@@ -12,5 +19,13 @@ environment = SubResource( 1 )
 
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
 transform = Transform( -0.172388, 0.873979, -0.454361, -0.420812, 0.351713, 0.836191, 0.890617, 0.33535, 0.30715, 3.78015, 5.70011, 4.0519 )
+visible = false
 
 [node name="Wave" parent="." instance=ExtResource( 1 )]
+visible = false
+
+[node name="Particles" type="Particles" parent="."]
+amount = 1
+explosiveness = 1.0
+process_material = SubResource( 2 )
+draw_pass_1 = SubResource( 3 )
