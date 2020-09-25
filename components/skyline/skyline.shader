@@ -2,12 +2,18 @@ shader_type particles;
 render_mode keep_data;
 
 uniform sampler2D noise;
-uniform float size;
+uniform float seed_building_height : hint_range(1., 100.) = 6.;
 
 const float rows = 10.;
 const float defaultWidth = 8.;
 const float rowSpacing = defaultWidth * 4.;
-const float colSpacing = defaultWidth * 1.5;
+const float colSpacing = defaultWidth * 1.3;
+
+const float PI = 3.1415;
+
+float n21(vec2 p) {
+    return fract(sin(p.x * 132.33 + p.y*1433.43) * 55332.33);
+}
 
 mat3 rotateX(float angle) {
     float cs = cos(angle);
@@ -34,7 +40,6 @@ mat3 rotate3d(vec3 rotation) {
 
 mat3 coords(int index, float t) {
 
-    float depth = size / rows;
     float width = rows;
 
     float zi = floor(float(index) / width);
@@ -74,7 +79,21 @@ void vertex() {
 
     vec2 id = vr[1].xy;
 
+    // float n = n21(id + vec2(100., seed_building_height));
+    float n = n21(id + vec2(100., floor(TIME/2.)));
+    float t = (TIME + n)/2.;
+
     float h = getBuildingHeight(vr[1].xy, TIME);
+    h += n * 15.;
+
+
+    // vertical wobble
+    // float h1 = n21(id + vec2(100. + floor(t), 1.));
+    // float h2 = n21(id + vec2(101. + floor(t), 1.));
+    // h += (mix(h1, h2, fract(t)) - 0.5) * 20.;
+
+
+
 
     // position
     TRANSFORM[3].xyz = vr[0];
@@ -82,13 +101,34 @@ void vertex() {
     TRANSFORM[3].x -= (colSpacing * rows) / 2. + defaultWidth / 2.;
 
 
+    // t = TIME + fract(n*1234.322);
+    // float pZ = n21(id + vec2(200. + floor(t), 0.));
+    // float pZNext = n21(id + vec2(201. + floor(t), 0.));
+    // TRANSFORM[3].z += mix(pZ*20. - 10., pZNext * 20. - 10., fract(t));
+
+    TRANSFORM[3].z -= abs(id.x - 5.)*2.;
+    TRANSFORM[3].x += (fract(n*123.456) - .5) * 10.;
+    TRANSFORM[3].z += (fract(n*3232.456) - .5) * 20.;
+
+
     // scale
     mat3 scale = mat3(vec3(defaultWidth,0.,0.), vec3(0.,h,0.), vec3(0.,0.,defaultWidth/2.));
 
 
     // rotation
-    mat3 rotation = rotateY(sin(TIME * (id.x - rows/2.) + TIME/2.) + id.y);
+    // t = TIME + n*2.;
+    // t /= max(1., fract(n*123.)*3.);
+    // float rY = n21(id + vec2(100. + floor(t), 0.));
+    // float rYNext = n21(id + vec2(101. + floor(t), 0.));
+    // mat3 rotation = rotateY(mix(rY * PI, rYNext * PI, fract(t)));
+    // mat3 rotation = rotateY(sin(TIME * (id.x - rows/2.) + TIME/2.) + id.y);
     // mat3 rotation = rotate3d(vec3(TIME + vr[1].x, TIME/2. + vr[1].x,TIME*2. + vr[1].x/2.));
+
+    float rYbase = (id.x - rows/2.)/(rows*1.8);
+    rYbase += (fract(n*23543.2) - .2) * step(abs(id.x), 2.);
+
+    mat3 rotation = rotateY(rYbase * PI);
+
 
     mat3 transform = rotation;
     transform *= scale;
@@ -98,7 +138,12 @@ void vertex() {
     TRANSFORM[2].xyz = transform[2].xyz;
 
 
-    COLOR.rgb = vec3(vr[1].xy, h);
+    // approach
+    TRANSFORM[3].z += fract(TIME/2.) * 10.;
+
+
+    // COLOR.rgb = vec3(vr[1].xy, h);
+    CUSTOM.rgba = vec4(vr[1].xy, h, defaultWidth);
 }
 
 void fragment() {

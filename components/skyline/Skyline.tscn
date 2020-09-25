@@ -12,7 +12,7 @@ noise = SubResource( 1 )
 
 [sub_resource type="ShaderMaterial" id=3]
 shader = ExtResource( 1 )
-shader_param/size = 15.0
+shader_param/seed_building_height = 20.965
 shader_param/noise = SubResource( 2 )
 
 [sub_resource type="ShaderMaterial" id=4]
@@ -23,7 +23,7 @@ material = SubResource( 4 )
 size = Vector3( 1, 1, 1 )
 
 [node name="Skyline" type="Particles"]
-amount = 20
+amount = 30
 lifetime = 600.0
 speed_scale = 64.0
 explosiveness = 1.0

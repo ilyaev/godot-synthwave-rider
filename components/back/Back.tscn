@@ -4,7 +4,7 @@
 [ext_resource path="res://components/back/Back.gd" type="Script" id=2]
 
 [sub_resource type="PlaneMesh" id=1]
-size = Vector2( 300, 300 )
+size = Vector2( 500, 500 )
 
 [sub_resource type="OpenSimplexNoise" id=2]
 seed = 5
