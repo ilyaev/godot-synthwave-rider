@@ -3,6 +3,8 @@ render_mode keep_data;
 
 uniform sampler2D noise;
 uniform float seed_building_height : hint_range(1., 100.) = 6.;
+uniform float shipShift = 0.;
+uniform float velocity = 0.;
 
 const float rows = 10.;
 const float defaultWidth = 8.;
@@ -49,15 +51,18 @@ mat3 coords(int index, float t) {
 
     float len = 1.;
 
-    float x = float(xi) * (len + colSpacing);
+    float oddity = 1. - mod(zi, 2.)*2.;
+
+    float x = float(xi) * (len + colSpacing) - (zi * (defaultWidth/2.) * oddity);
     float z = float(zi) * (len - rowSpacing);
 
     // horizontal shift
     // x += sin(zi*4. + t*3. + xi)*3.;
 
     // noise shift
-    // z += (texture(noise, vec2(xi,zi+1.)/10. + vec2(t/20.,t/40.)).r - .5) * 45.;
-    // x += (texture(noise, vec2(xi+543.,zi+12.)/10. + vec2(t/10.,t/20.)).r - .5) * 45.;
+    float nt = t/100.;
+    z += (texture(noise, vec2(xi,zi+1.)/80. + vec2(nt, 0.)).r - .5) * 45.;
+    x += (texture(noise, vec2(xi+543.,zi+12.)/80. + vec2(nt, 0.)).r - .5) * 45.;
 
     vec3 offset = vec3(0.) - vec3(width * (len + colSpacing) / 2.);
 
@@ -80,7 +85,7 @@ void vertex() {
     vec2 id = vr[1].xy;
 
     // float n = n21(id + vec2(100., seed_building_height));
-    float n = n21(id + vec2(100., floor(TIME/2.)));
+    float n = n21(id + vec2(100., 5.));
     float t = (TIME + n)/2.;
 
     float h = getBuildingHeight(vr[1].xy, TIME);
@@ -127,7 +132,8 @@ void vertex() {
     float rYbase = (id.x - rows/2.)/(rows*1.8);
     rYbase += (fract(n*23543.2) - .2) * step(abs(id.x), 2.);
 
-    mat3 rotation = rotateY(rYbase * PI);
+    float rotationNoise = (texture(noise, vec2(id.x + 43., id.y + 112.) / 10. + vec2(TIME/100., 0.)).r - .5) * 2.;
+    mat3 rotation = rotateY((rYbase - rotationNoise) * PI);
 
 
     mat3 transform = rotation;
@@ -139,7 +145,11 @@ void vertex() {
 
 
     // approach
-    TRANSFORM[3].z += fract(TIME/2.) * 10.;
+    // TRANSFORM[3].z += fract(TIME/2.) * 10.;
+
+
+    // parallax
+    TRANSFORM[3].x -= shipShift * 2.;
 
 
     // COLOR.rgb = vec3(vr[1].xy, h);

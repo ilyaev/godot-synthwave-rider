@@ -12,7 +12,9 @@ noise = SubResource( 1 )
 
 [sub_resource type="ShaderMaterial" id=3]
 shader = ExtResource( 1 )
-shader_param/seed_building_height = 20.965
+shader_param/seed_building_height = 18.019
+shader_param/shipShift = 0.0
+shader_param/velocity = 0.0
 shader_param/noise = SubResource( 2 )
 
 [sub_resource type="ShaderMaterial" id=4]

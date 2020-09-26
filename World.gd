@@ -68,6 +68,9 @@ func _process(delta):
 	back.setShipVelocity(ship.speed * 50)
 	back.setShipPosition(ship.position)
 
+	skyline.setShipVelocity(ship.speed * 50)
+	skyline.setShipPosition(ship.position)
+
 	# camera.rotation = Vector3(sin(t)*.2,sin(t)*.1,cos(t)*.3)
 
 
