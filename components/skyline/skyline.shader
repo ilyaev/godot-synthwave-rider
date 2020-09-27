@@ -5,6 +5,7 @@ uniform sampler2D noise;
 uniform float seed_building_height : hint_range(1., 100.) = 6.;
 uniform float shipShift = 0.;
 uniform float velocity = 0.;
+uniform float noiseSeed = 4.;
 
 const float rows = 10.;
 const float defaultWidth = 8.;
@@ -82,10 +83,11 @@ void vertex() {
 
     mat3 vr = coords(INDEX, TIME);
 
+    float depth = defaultWidth/2.;
+
     vec2 id = vr[1].xy;
 
-    // float n = n21(id + vec2(100., seed_building_height));
-    float n = n21(id + vec2(100., 5.));
+    float n = n21(id + vec2(100., noiseSeed));
     float t = (TIME + n)/2.;
 
     float h = getBuildingHeight(vr[1].xy, TIME);
@@ -117,7 +119,7 @@ void vertex() {
 
 
     // scale
-    mat3 scale = mat3(vec3(defaultWidth,0.,0.), vec3(0.,h,0.), vec3(0.,0.,defaultWidth/2.));
+    mat3 scale = mat3(vec3(defaultWidth,0.,0.), vec3(0.,h,0.), vec3(0.,0.,depth));
 
 
     // rotation
@@ -154,6 +156,7 @@ void vertex() {
 
     // COLOR.rgb = vec3(vr[1].xy, h);
     CUSTOM.rgba = vec4(vr[1].xy, h, defaultWidth);
+    COLOR.r = depth;
 }
 
 void fragment() {

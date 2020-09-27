@@ -15,10 +15,13 @@ shader = ExtResource( 1 )
 shader_param/seed_building_height = 18.019
 shader_param/shipShift = 0.0
 shader_param/velocity = 0.0
+shader_param/noiseSeed = 3.0
 shader_param/noise = SubResource( 2 )
 
 [sub_resource type="ShaderMaterial" id=4]
 shader = ExtResource( 2 )
+shader_param/color_circles = Color( 0.0901961, 0.901961, 0.74902, 1 )
+shader_param/color_road = Color( 0.94902, 0.803922, 0.333333, 1 )
 
 [sub_resource type="CubeMesh" id=5]
 material = SubResource( 4 )

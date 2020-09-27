@@ -5,11 +5,11 @@ var velocity;
 var pos;
 
 func _ready():
-	# randomize();
+	randomize();
 	t = 0;
 	velocity = Vector3(0,0,0);
 	pos = Vector3(0,0,0);
-	# get_surface_material(0).set_shader_param("noiseSeed", rand_range(1,2000));
+	process_material.set_shader_param("noiseSeed", rand_range(1,2000));
 
 
 

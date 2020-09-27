@@ -12,3 +12,11 @@ roadShift = 17
 [node name="Ferarri" parent="." instance=ExtResource( 4 )]
 transform = Transform( 1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0, 0 )
 script = ExtResource( 3 )
+
+[node name="SpotLight" type="SpotLight" parent="."]
+transform = Transform( 5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 1.17487, -6.87576 )
+visible = false
+light_energy = 12.73
+spot_range = 31.1155
+spot_angle = 55.621
+spot_angle_attenuation = 0.203063

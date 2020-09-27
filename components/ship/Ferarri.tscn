@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://models/Ferarri2/Material_001.material" type="Material" id=1]
+[ext_resource path="res://components/ship/lights.shader" type="Shader" id=2]
 
 [sub_resource type="ArrayMesh" id=1]
 resource_name = "Car"
@@ -47,6 +48,41 @@ surfaces/0 = {
 "vertex_count": 848
 }
 
+[sub_resource type="QuadMesh" id=4]
+
+[sub_resource type="Shader" id=6]
+code = "shader_type spatial;
+render_mode unshaded;
+
+uniform vec4 color : hint_color = vec4(0.99, .1, .1, 1.);
+
+float sdBox( in vec2 p, in vec2 b )
+{
+    vec2 d = abs(p)-b;
+    return length(max(d,0.0)) + min(max(d.x,d.y),0.0);
+}
+
+void fragment() {
+    vec3 col = vec3(0.);
+
+    vec2 uv = fract(UV * vec2(2., 1.)) - vec2(.5, .5);
+
+    float d = .05/pow(sdBox(uv, vec2(.08, 0.02)), 1.3 + sin(TIME*3.+cos(TIME*10. + sin(TIME*5.)))*.1);
+
+    col += d * color.rgb;
+    ALBEDO.rgb = col;
+    ALPHA = smoothstep(0.1, .9, d);
+}"
+
+[sub_resource type="ShaderMaterial" id=5]
+shader = SubResource( 6 )
+shader_param/color = Color( 0.92549, 0.364706, 0.364706, 1 )
+
+[sub_resource type="ShaderMaterial" id=7]
+shader = ExtResource( 2 )
+shader_param/color = Color( 0.266667, 0.337255, 0.333333, 1 )
+shader_param/seed = 1.0
+
 [node name="Ferarri" type="Spatial"]
 
 [node name="Car" type="MeshInstance" parent="."]
@@ -63,3 +99,13 @@ material/0 = null
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.674408, -2.69052 )
 mesh = SubResource( 3 )
 material/0 = null
+
+[node name="StopLights" type="MeshInstance" parent="Car"]
+transform = Transform( -5, 0, -3.89414e-07, 0, 2, 0, 1.94707e-06, 0, -1, -4.35187e-07, 1.21363, -4.26239 )
+mesh = SubResource( 4 )
+material/0 = SubResource( 5 )
+
+[node name="ForeLights" type="MeshInstance" parent="Car"]
+transform = Transform( -5, 7.22494e-07, 5.29341e-07, 2.83089e-06, 1.83321, 0.791576, -6.64145e-07, 2.37473, -0.611071, 2.22058e-06, 1.01513, 3.88812 )
+mesh = SubResource( 4 )
+material/0 = SubResource( 7 )
