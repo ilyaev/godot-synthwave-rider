@@ -66,28 +66,27 @@ func getCoords():
 
 func _input(event):
 	if event.is_action_pressed("ui_left"):
-		ship.speed.x = -.02;
+		# ship.speed.x = -.01;
+		ship.velocity.x = -0.1;
 	if event.is_action_pressed("ui_right"):
-		ship.speed.x = .02;
+		# ship.speed.x = .01;
+		ship.velocity.x = 0.1;
 	if event.is_action_pressed("ui_up"):
-		# ship.position.y += 0.1;
-		# ship.velocity.y = .5
 		ship.maxSpeed = min(1.0, ship.maxSpeed + 0.1)
 	if event.is_action_pressed("ui_down"):
-		# ship.position.y -= 0.1;
-		# ship.velocity.y = -.5
 		ship.maxSpeed = max(0.0, ship.maxSpeed - 0.1)
-	if event.is_action_released("ui_left"):
-		ship.speed.x = 0
-	if event.is_action_released("ui_right"):
-		ship.speed.x = 0
+	# if event.is_action_released("ui_left"):
+	# 	ship.speed.x = 0
+	# if event.is_action_released("ui_right"):
+	# 	ship.speed.x = 0
 	if event.is_action_released("ui_up"):
 		ship.velocity.y = 0
 	if event.is_action_released("ui_down"):
 		ship.velocity.y = 0
 	if event.is_action_pressed("ui_accept"):
-		ship.speed.z = .3
-	if event.is_action_released("ui_accept"):
-		ship.speed.z = 0
+		ship.velocity.z = .9;
+		ship.speed.z = .3;
+	# if event.is_action_released("ui_accept"):
+	# 	ship.speed.z = 0
 	if event.is_action_pressed("ui_focus_next"):
 		back.visible = !back.visible

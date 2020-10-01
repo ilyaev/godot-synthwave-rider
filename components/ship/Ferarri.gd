@@ -16,6 +16,6 @@ func _ready():
 
 
 func _process(_delta):
-	front.rotation = Vector3(pos, -0.3 * sign(speed.x), 0)
+	front.rotation = Vector3(pos, -5.3 * speed.x, 0)
 	back.rotation = Vector3(pos, 0, 0)
 	pass

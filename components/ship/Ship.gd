@@ -2,16 +2,19 @@ extends MeshInstance
 
 export var roadShift = 0
 export var id = 0
-export var maxSpeed = 1;
+export var maxSpeed = .4;
 export var originalMaxSpeed = 1;
 
+
+var xRange = 1.2;
 var velocity = Vector3(0,0,0)
 var speed = Vector3(0,0,0)
-var position = Vector3(1.2,0,0);
-var gravityForce = Vector3(0, 0, -.9);
+var position = Vector3(xRange,0,0);
+var gravityForce = Vector3(0, 0, -1.9);
 var frictionForce = .2;
 var originalX = 0;
 var manevrity = 1;
+
 
 var model;
 
@@ -41,7 +44,11 @@ func _physics_process(delta):
 
 	position += speed;
 
-	# position.x = min(2, max(-2, position.x))
+	position.x = min(xRange, max(-xRange, position.x))
+
+	if abs(position.x) >= xRange:
+		velocity.x = 0;
+		speed.x = 0;
 
 	transform.origin.x = position.x
 	Global.debug = true
@@ -50,7 +57,7 @@ func _physics_process(delta):
 
 	var l = 0.5;
 	var ta = (Global.getDistortionY(position.y + l, roadShift, 0.2) - transform.origin.y) / l;
-	rotation = Vector3(atan(ta), -0.1 * sign(speed.x), 0)
+	rotation = Vector3(atan(ta), (-0.1*(xRange - abs(position.x))) * sign(speed.x), 0); # sin(t*3*sign(speed.x))*.2)
 	transform.origin.y -= atan(ta) * 2;
 
 	position.z = min(5, max(0, position.z))

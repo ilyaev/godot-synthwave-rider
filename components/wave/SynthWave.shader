@@ -190,7 +190,7 @@ vec3 draw(vec2 gUV, vec4 gCOLOR, vec2 uvShift, vec3 vert) {
     // return rc;
 
     col *= cRoad;
-    col += (1. - cRoad) *  step(.01, sin((gUV.y - shift) * 60.)) * (1. - cDelimeter) * road_color.rgb;
+    col += (1. - cRoad) *  step(.01, sin((gUV.y - shift) * 60.)) * (1. - cDelimeter) * road_color.rgb * 3.;
 
     return col;
 }

@@ -151,7 +151,7 @@ void vertex() {
 
 
     // parallax
-    TRANSFORM[3].x -= shipShift * 2.;
+    TRANSFORM[3].x -= shipShift * 4.;//12.;
 
 
     // COLOR.rgb = vec3(vr[1].xy, h);
